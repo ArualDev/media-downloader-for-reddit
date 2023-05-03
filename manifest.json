@@ -1,8 +1,14 @@
 {
   "manifest_version": 2,
   "name": "Media Downloader for Reddit",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Makes it easy to download media content from Reddit.",
+  "homepage_url": "https://github.com/ArualDev/media-downloader-for-reddit",
+  "browser_specific_settings": {
+    "gecko": {
+      "update_url": "https://raw.githubusercontent.com/ArualDev/media-downloader-for-reddit/main/updates.json"
+    }
+  },
   "icons": {
     "48": "icons/icon48.png",
     "96": "icons/icon96.png"
