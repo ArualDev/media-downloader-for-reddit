@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 48
+}
+
+.v-dwnld-btn-wrapper {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    height: 100%;
+    border-radius: 2px;
+    margin-left: auto;
+}
+
+.v-dwnld-btn {
+    text-align: center;
+    height: 100%;
+    /* padding: 0 12px; */
+    padding-bottom: 8px;
+}
+
+
+.v-dwnld-btn:hover {
+    background-color: #2d2d2e
+}
+
+.v-dwnld-btn span {
+    font-size: 1.4rem;
+    transform: translate(0, 5px);
+}
+
+.v-dwnld-btn:last-child span {
+    font-size: 1.4rem;
+    transform: translate(0, 6px);
+}
+
+.v-dwnld-btn:first-child {
+    padding: 12px -6px 12px 6px
+}
+
+.v-dwnld-btn:last-child {
+    padding: 12px 6px 12px -6px
+}
+
+.v-dwnld-btn-dropdown {
+    display: block;
+    border: 1px solid var(--color-tone-3);
+    color: var(--color-tone-2);
+    position: absolute;
+    z-index: 79;
+    background-color: var(--color-tone-6);
+    border-radius: 2px;
+}
+
+.v-dwnld-btn-dropdown ul {}
+
+.v-dwnld-btn-dropdown ul li {
+    font-size: 0.8rem;
+    display: block;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--color-tone-3);
+    text-align: center;
+}
+
+.v-dwnld-btn-dropdown ul li:last-child {
+    border-bottom: none;
+}
+
+.v-dwnld-btn-dropdown ul li:hover {
+    cursor: pointer;
+    color: white;
+    text-decoration: underline;
+    /* background-color: var(--color-tone-7); */
+}

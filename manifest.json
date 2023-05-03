@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "Media Downloader for Reddit",
+  "version": "1.1.1",
+  "description": "Makes it easy to download media content from Reddit.",
+  "icons": {
+    "48": "icons/icon48.png",
+    "96": "icons/icon96.png"
+  },
+  "permissions": [
+    "downloads",
+    "*://*.reddit.com/*",
+    "*://*.redd.it/*",
+    "*://*.rapidsave.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.reddit.com/*"
+      ],
+      "js": [
+        "init.js"
+      ],
+      "css": [
+        "styles.css"
+      ]
+    }
+  ]
+}
