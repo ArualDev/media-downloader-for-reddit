@@ -1,12 +1,16 @@
 {
     "addons": {
-      "{0d567f96-4e07-448b-9531-0e867e707cd3}": {
-        "updates": [
-          {
-            "version": "1.1.1",
-            "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.1/media_downloader_for_reddit-1.1.1.xpi"
-          }
-        ]
-      }
+        "{0d567f96-4e07-448b-9531-0e867e707cd3}": {
+            "updates": [
+                {
+                    "version": "1.1.2",
+                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.2/media_downloader_for_reddit-1.1.2.xpi"
+                },
+                {
+                    "version": "1.1.1",
+                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.1/media_downloader_for_reddit-1.1.1.xpi"
+                }
+            ]
+        }
     }
-  }
+}
