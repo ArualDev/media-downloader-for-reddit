@@ -1,16 +1,17 @@
 const REFRESH_INTERVAL_MS = 500;
 // There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
-const REDDIT_IMAGE_EXTENSIONS = [".jpg",".jpeg", ".png", ".webp"];
+const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 
 function permalinkToUrl(permalink) {
     return `https://reddit.com${permalink}`;
 }
 
 function nameFromPermalink(permalink) {
-    const pattern = /\/([\w-]+)\/$/;
-    const matches = permalink.match(pattern)
-    return matches[1];
+    const segments = permalink.split("/");
+    if(segments.length < 6)
+        return "";
+    return segments[5]
 }
 
 function fileExtFromUrl(url) {
@@ -94,22 +95,33 @@ class DownloadInfoImage extends DownloadInfo {
         super(link, filenamePrefix, quality);
         this.contentType = "Image";
         this.fileExt = fileExtFromUrl(this.link);
-        if(!this.fileExt in REDDIT_IMAGE_EXTENSIONS)
-            this.fileExt = ".png";        
+        if (!this.fileExt in REDDIT_IMAGE_EXTENSIONS)
+            this.fileExt = ".png";
     }
 }
 
 class DownloadInfoGallery extends DownloadInfo {
-    constructor(links, filenamePrefix = "image") {
+    constructor(links, filenamePrefix = "image", folderPrefix = "gallery") {
         super(null, filenamePrefix);
         this.urls = links;
         this.contentType = "Gallery";
-        this.fileExt = ".webp";
+        this.folderPrefix = folderPrefix;
     }
 
     download() {
+        function getRandomString(len) {
+            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            let res = ""
+            for (let i = 0; i < len; i++) {
+                const index = Math.floor(Math.random() * chars.length);
+                res += chars.charAt(index);
+            }
+            return res
+        }
+
+        const folderName = `${this.folderPrefix}-${getRandomString(6)}`;
         for (const [i, url] of this.urls.entries()) {
-            downloadContent(url, `${this.filenamePrefix}-${i + 1}${this.fileExt}`)
+            downloadContent(url, `${folderName}/${this.filenamePrefix}-${i + 1}${fileExtFromUrl(url)}`)
         }
     }
 }
@@ -210,12 +222,17 @@ async function fetchPostData(postUrl) {
     function getGalleryDownloads(data) {
         const metadata = data.media_metadata;
         const urls = [];
-        for (const m of Object.values(metadata)) {
-            const url = m.s.u;
-            urls.push(url) 
+
+        // Get the keys in the right order
+        const keys = data.gallery_data.items.map(item => item.media_id);
+
+        for (const k of keys) {
+            const ext = `.${metadata[k].m.split("/")[1]}`;
+            const url = `https://i.redd.it/${k}${ext}`;
+            urls.push(url)
         }
-        const folderName = `${data.filenamePrefix}-${data.id}`;
-        return [new DownloadInfoGallery(urls, `${folderName}/${data.filenamePrefix}`)];
+        
+        return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}-${data.id}`)];
     }
 
     return new Promise(resolve => {
@@ -242,7 +259,6 @@ async function fetchPostData(postUrl) {
                     downloads.push(...getGifvDownloads(data));
                 else if (data?.is_gallery)
                     downloads.push(...getGalleryDownloads(data));
-
 
                 const postData = new PostData(postUrl, data?.title, downloads);
                 resolve(postData);
@@ -280,7 +296,7 @@ function handleInjectButton(postData, injectContainer) {
     })
 
     btnWrapper.append(btn);
-    
+
     injectContainer.appendChild(btnWrapper)
 
     // if(postData.downloads.length === 1)
