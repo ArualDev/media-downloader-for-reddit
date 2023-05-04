@@ -90,6 +90,20 @@ class DownloadInfoImage extends DownloadInfo {
     }
 }
 
+class DownloadInfoGallery extends DownloadInfo {
+    constructor(links, filenamePrefix = "image", quality) {
+        super(null, filenamePrefix, quality);
+        this.urls = links;
+        this.contentType = "Gallery";
+        this.fileExt = ".webp";
+    }
+
+    download() {
+        for (const [i, url] of this.urls.entries()) {
+            downloadContent(url, `${this.filenamePrefix}-${i + 1}${this.fileExt}`)
+        }
+    }
+}
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
@@ -182,8 +196,21 @@ async function fetchPostData(postUrl) {
         return [new DownloadInfoImage(url, data.filenamePrefix, `${width}x${height}`)];
     }
 
+    function getGalleryDownloads(data) {
+        const metadata = data.media_metadata;
+        const urls = [];
+        const metadataKeys = Object.keys(metadata)
+        for (let i = 0; i < metadataKeys.length; i++) {
+            const url = metadata[metadataKeys[i]].s.u;
+            urls.push(url) 
+        }
+
+        const folderName = `${data.filenamePrefix}-${data.id}`;
+        return [new DownloadInfoGallery(urls, `${folderName}/${data.filenamePrefix}`)];
+    }
+
     return new Promise(resolve => {
-        fetch(`${postUrl}.json`)
+        fetch(`${postUrl}.json?raw_json=1`)
             .then(response => response.json())
             .then(async data => {
                 data = data[0]?.data?.children[0]?.data;
@@ -206,6 +233,9 @@ async function fetchPostData(postUrl) {
                     downloads.push(...getImageDownloads(data));
                 else if (gifvMatches)
                     downloads.push(...getGifvDownloads(data));
+                else if (data?.is_gallery)
+                    downloads.push(...getGalleryDownloads(data));
+
 
                 const postData = new PostData(postUrl, data?.title, downloads);
                 resolve(postData);
@@ -243,7 +273,11 @@ function handleInjectButton(postData, injectContainer) {
     })
 
     btnWrapper.append(btn);
+    
+    injectContainer.appendChild(btnWrapper)
 
+    if(postData.downloads.length === 1)
+        return;
     const moreBtn = document.createElement('button');
     moreBtn.setAttribute("title", "More download options");
 
@@ -254,7 +288,6 @@ function handleInjectButton(postData, injectContainer) {
     moreBtn.prepend(moreIcon)
     moreBtn.classList.add("v-dwnld-btn");
     btnWrapper.append(moreBtn);
-    injectContainer.appendChild(btnWrapper)
 
     const dropdown = document.createElement("div");
     let dropdownActive = false;
