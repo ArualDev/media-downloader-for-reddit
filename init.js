@@ -20,13 +20,10 @@ function downloadContent(url, filename) {
     });
 }
 
-function downloadContentRapidSave(baseUrl, fallbackUrl, audioUrl = "false", filename) {
-    const url = `https://sd.rapidsave.com/download-sd.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
-    browser.runtime.sendMessage({
-        action: "downloadRS",
-        url: url,
-        filename: filename
-    });
+function getRSUrl(baseUrl, fallbackUrl, audioUrl = "false") {
+    if (!audioUrl)
+        audioUrl = "false";
+    return `https://sd.rapidsave.com/download-sd.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
 }
 
 // TODO: Is this class even necessary
@@ -38,6 +35,7 @@ class PostData {
     }
 }
 
+// TODO: Add file size. Should be possible with a simple http request.
 class DownloadInfo {
     constructor(link, filenamePrefix = "file", quality = "") {
         this.contentType = "Content"
@@ -57,17 +55,10 @@ class DownloadInfo {
 }
 
 class DownloadInfoVideo extends DownloadInfo {
-    constructor(baseUrl, fallbackUrl, audioUrl, filenamePrefix = "video", quality) {
-        super(null, filenamePrefix, quality);
+    constructor(link, filenamePrefix = "video", quality) {
+        super(link, filenamePrefix, quality);
         this.contentType = "Video";
         this.fileExt = ".mp4";
-        this.baseUrl = baseUrl;
-        this.audioUrl = audioUrl;
-        this.fallbackUrl = fallbackUrl;
-    }
-
-    download() {
-        downloadContentRapidSave(this.baseUrl, this.fallbackUrl, this.audioUrl, this.getFullFileName())
     }
 }
 
@@ -91,14 +82,7 @@ class DownloadInfoGif extends DownloadInfo {
     }
 }
 
-class DownloadInfoGifv extends DownloadInfo {
-    constructor(link, filenamePrefix = "gif_video", quality) {
-        super(link, filenamePrefix, quality);
-        this.contentType = "GIF Video";
-        this.fileExt = ".mp4";
-    }
-}
-
+// TODO: Add classes for an image and an image collection
 
 
 async function fetchPostData(postUrl) {
@@ -119,29 +103,31 @@ async function fetchPostData(postUrl) {
 
         let audioUrl = `${matches[1]}audio${matches[3]}`;
         // Check if the audio url file exists at that location.
-        const response = await fetch(audioUrl);
-        if (!response.ok)
-            audioUrl = "false"
+        const hasAudio = (await fetch(audioUrl)).ok;
+        if (!hasAudio)
+            audioUrl = null;
+
+        const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
 
         // Add the original video link
         downloads.push(
-            new DownloadInfoVideo(postUrl, fallbackUrl, audioUrl, data.filenamePrefix, `${originalHeight}p`)
+            new DownloadInfoVideo(url, data.filenamePrefix, `${originalHeight}p`)
         )
 
-
-        if (matches.length === 0)
+        if (!matches)
             return downloads;
 
         // Add alternative resolutions
         for (const height of REDDIT_VIDEO_HEIGHTS) {
             if (height >= originalHeight)
                 continue;
-            const url = `${matches[1]}${height}${matches[3]}`;
-            const downloadInfo = new DownloadInfoVideo(postUrl, url, audioUrl, data.filenamePrefix, `${height}p`)
+            const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
+            const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
+            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`)
             downloads.push(downloadInfo)
         }
 
-        if (response.ok) {
+        if (hasAudio) {
             downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix));
         }
 
@@ -163,7 +149,7 @@ async function fetchPostData(postUrl) {
 
         // Add the original video link
         downloads.push(
-            new DownloadInfoGifv(fallbackUrl, data.filenamePrefix, `${originalHeight}p`)
+            new DownloadInfoVideo(fallbackUrl, data.filenamePrefix, `${originalHeight}p`)
         )
 
         // Check if the video URL matches the standard Reddit video URL pattern
@@ -177,7 +163,7 @@ async function fetchPostData(postUrl) {
             if (height >= originalHeight)
                 continue;
             const url = `${matches[1]}${height}${matches[3]}`;
-            const downloadInfo = new DownloadInfoGifv(url, data.filenamePrefix, `${height}p`)
+            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`)
             downloads.push(downloadInfo)
         }
         return downloads;
@@ -193,17 +179,17 @@ async function fetchPostData(postUrl) {
                     data = data.crosspost_parent_list[0]
 
                 data.filenamePrefix = nameFromPermalink(data?.permalink);
-                let downloads = [];
+                const downloads = [];
 
                 const gifMatches = data?.url?.match(/\.gif\/?$/);
                 const gifvMatches = data?.url?.match(/\.gifv\/?$/);
 
                 if (data?.is_video)
-                    downloads = await getVideoDownloads(data);
+                    downloads.push(...(await getVideoDownloads(data)));
                 else if (gifMatches)
-                    downloads = getGifDownloads(data);
+                    downloads.push(...getGifDownloads(data));
                 else if (gifvMatches)
-                    downloads = getGifvDownloads(data);
+                    downloads.push(...getGifvDownloads(data));
 
                 const postData = new PostData(postUrl, data?.title, downloads);
                 resolve(postData);
@@ -216,6 +202,7 @@ function generateBtnElementNewUI() {
 
 }
 
+// TODO: Refactor this
 function handleInjectButton(postData, injectContainer) {
     function getBtnText(downloadData) {
         return `Download ${downloadData.contentType}`
@@ -332,7 +319,6 @@ function handleFeed() {
                     return;
                 handleInjectButton(postData, injectContainer);
             })
-
     }
 }
 
