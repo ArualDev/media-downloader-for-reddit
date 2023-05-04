@@ -1,6 +1,7 @@
 const REFRESH_INTERVAL_MS = 500;
-// There can be other resolutions apparently? One video had 220p somehow
+// There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
+const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".png", ".webp"];
 
 function permalinkToUrl(permalink) {
     return `https://reddit.com${permalink}`;
@@ -11,6 +12,14 @@ function nameFromPermalink(permalink) {
     const matches = permalink.match(pattern)
     return matches[1];
 }
+
+function fileExtFromUrl(url) {
+    const pattern = /\.\w{3,4}($|\?)/;
+    const matches = url.match(pattern);
+    return matches ? matches[0] : null;
+}
+
+fileExtFromUrl("https://i.redd.it/award_images/t5_22cerq/18mwqw5th9e51_MURICA.png");
 
 function downloadContent(url, filename) {
     browser.runtime.sendMessage({
@@ -86,13 +95,15 @@ class DownloadInfoImage extends DownloadInfo {
     constructor(link, filenamePrefix = "image", quality) {
         super(link, filenamePrefix, quality);
         this.contentType = "Image";
-        this.fileExt = ".jpg";
+        this.fileExt = fileExtFromUrl(this.link);
+        if(!this.fileExt in REDDIT_IMAGE_EXTENSIONS)
+            this.fileExt = ".png";        
     }
 }
 
 class DownloadInfoGallery extends DownloadInfo {
-    constructor(links, filenamePrefix = "image", quality) {
-        super(null, filenamePrefix, quality);
+    constructor(links, filenamePrefix = "image") {
+        super(null, filenamePrefix);
         this.urls = links;
         this.contentType = "Gallery";
         this.fileExt = ".webp";
@@ -104,6 +115,8 @@ class DownloadInfoGallery extends DownloadInfo {
         }
     }
 }
+
+// TODO: Add support for downloading galleries as .zip files
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
@@ -199,12 +212,10 @@ async function fetchPostData(postUrl) {
     function getGalleryDownloads(data) {
         const metadata = data.media_metadata;
         const urls = [];
-        const metadataKeys = Object.keys(metadata)
-        for (let i = 0; i < metadataKeys.length; i++) {
-            const url = metadata[metadataKeys[i]].s.u;
+        for (const m of Object.values(metadata)) {
+            const url = m.s.u;
             urls.push(url) 
         }
-
         const folderName = `${data.filenamePrefix}-${data.id}`;
         return [new DownloadInfoGallery(urls, `${folderName}/${data.filenamePrefix}`)];
     }
@@ -221,17 +232,15 @@ async function fetchPostData(postUrl) {
                 data.filenamePrefix = nameFromPermalink(data?.permalink);
                 const downloads = [];
 
-                const gifMatches = data?.url?.match(/\.gif\/?$/);
-                const imageMatches = data?.url?.match(/\.jpg\/?$/);
-                const gifvMatches = data?.url?.match(/\.gifv\/?$/);
+                const urlExt = fileExtFromUrl(data.url);
 
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
-                else if (gifMatches)
+                else if (urlExt === ".gif")
                     downloads.push(...getGifDownloads(data));
-                else if (imageMatches)
+                else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
                     downloads.push(...getImageDownloads(data));
-                else if (gifvMatches)
+                else if (urlExt === ".gifv")
                     downloads.push(...getGifvDownloads(data));
                 else if (data?.is_gallery)
                     downloads.push(...getGalleryDownloads(data));
@@ -276,8 +285,8 @@ function handleInjectButton(postData, injectContainer) {
     
     injectContainer.appendChild(btnWrapper)
 
-    if(postData.downloads.length === 1)
-        return;
+    // if(postData.downloads.length === 1)
+    //     return;
     const moreBtn = document.createElement('button');
     moreBtn.setAttribute("title", "More download options");
 
