@@ -1,7 +1,7 @@
 const REFRESH_INTERVAL_MS = 500;
 // There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
-const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".png", ".webp"];
+const REDDIT_IMAGE_EXTENSIONS = [".jpg",".jpeg", ".png", ".webp"];
 
 function permalinkToUrl(permalink) {
     return `https://reddit.com${permalink}`;
