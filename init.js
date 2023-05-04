@@ -19,8 +19,6 @@ function fileExtFromUrl(url) {
     return matches ? matches[0] : null;
 }
 
-fileExtFromUrl("https://i.redd.it/award_images/t5_22cerq/18mwqw5th9e51_MURICA.png");
-
 function downloadContent(url, filename) {
     browser.runtime.sendMessage({
         action: "download",
