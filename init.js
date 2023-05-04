@@ -82,12 +82,17 @@ class DownloadInfoGif extends DownloadInfo {
     }
 }
 
-// TODO: Add classes for an image and an image collection
+class DownloadInfoImage extends DownloadInfo {
+    constructor(link, filenamePrefix = "image", quality) {
+        super(link, filenamePrefix, quality);
+        this.contentType = "Image";
+        this.fileExt = ".jpg";
+    }
+}
 
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
-
         const downloads = [];
         const vidData = data.media?.reddit_video;
         if (!vidData)
@@ -134,14 +139,6 @@ async function fetchPostData(postUrl) {
         return downloads;
     }
 
-    function getGifDownloads(data) {
-        const url = data.url;
-        const sourceInfo = data?.preview?.images[0]?.source;
-        const width = sourceInfo?.width;
-        const height = sourceInfo?.height;
-        return [new DownloadInfoGif(url, data.filenamePrefix, `${width}x${height}`)];
-    }
-
     function getGifvDownloads(data) {
         const downloads = [];
         const fallbackUrl = data?.preview?.reddit_video_preview?.fallback_url;
@@ -169,6 +166,22 @@ async function fetchPostData(postUrl) {
         return downloads;
     }
 
+    function getGifDownloads(data) {
+        const url = data.url;
+        const sourceInfo = data?.preview?.images[0]?.source;
+        const width = sourceInfo?.width;
+        const height = sourceInfo?.height;
+        return [new DownloadInfoGif(url, data.filenamePrefix, `${width}x${height}`)];
+    }
+
+    function getImageDownloads(data) {
+        const url = data.url;
+        const sourceInfo = data?.preview?.images[0]?.source;
+        const width = sourceInfo?.width;
+        const height = sourceInfo?.height;
+        return [new DownloadInfoImage(url, data.filenamePrefix, `${width}x${height}`)];
+    }
+
     return new Promise(resolve => {
         fetch(`${postUrl}.json`)
             .then(response => response.json())
@@ -182,12 +195,15 @@ async function fetchPostData(postUrl) {
                 const downloads = [];
 
                 const gifMatches = data?.url?.match(/\.gif\/?$/);
+                const imageMatches = data?.url?.match(/\.jpg\/?$/);
                 const gifvMatches = data?.url?.match(/\.gifv\/?$/);
 
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
                 else if (gifMatches)
                     downloads.push(...getGifDownloads(data));
+                else if (imageMatches)
+                    downloads.push(...getImageDownloads(data));
                 else if (gifvMatches)
                     downloads.push(...getGifvDownloads(data));
 
