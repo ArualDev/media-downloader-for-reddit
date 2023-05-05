@@ -15,6 +15,7 @@
   },
   "permissions": [
     "downloads",
+    "storage",
     "*://*.reddit.com/*",
     "*://*.redd.it/*",
     "*://*.rapidsave.com/*"

@@ -1,7 +1,7 @@
 const REFRESH_INTERVAL_MS = 500;
 // There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
-const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 function permalinkToUrl(permalink) {
     return `https://reddit.com${permalink}`;
@@ -9,7 +9,7 @@ function permalinkToUrl(permalink) {
 
 function nameFromPermalink(permalink) {
     const segments = permalink.split("/");
-    if(segments.length < 6)
+    if (segments.length < 6)
         return "";
     return segments[5]
 }
@@ -54,7 +54,9 @@ class DownloadInfo {
     }
 
     getFullFileName() {
-        return `${this.filenamePrefix}-${this.quality}${this.fileExt}`
+        if (this.quality)
+            return `${this.filenamePrefix}-${this.quality}${this.fileExt}`;
+        return `${this.filenamePrefix}${this.fileExt}`;
     }
 
     download() {
@@ -82,21 +84,12 @@ class DownloadInfoAudio extends DownloadInfo {
     }
 }
 
-class DownloadInfoGif extends DownloadInfo {
-    constructor(link, filenamePrefix = "gif", quality) {
-        super(link, filenamePrefix, quality);
-        this.contentType = "GIF";
-        this.fileExt = ".gif";
-    }
-}
-
 class DownloadInfoImage extends DownloadInfo {
     constructor(link, filenamePrefix = "image", quality) {
         super(link, filenamePrefix, quality);
-        this.contentType = "Image";
-        this.fileExt = fileExtFromUrl(this.link);
-        if (!this.fileExt in REDDIT_IMAGE_EXTENSIONS)
-            this.fileExt = ".png";
+        this.fileExt = fileExtFromUrl(this.link) ?? ".png";
+        const isGif = this.fileExt === ".gif";
+        this.contentType = isGif ? "GIF" : "Image";
     }
 }
 
@@ -203,20 +196,15 @@ async function fetchPostData(postUrl) {
         return downloads;
     }
 
-    function getGifDownloads(data) {
-        const url = data.url;
-        const sourceInfo = data?.preview?.images[0]?.source;
-        const width = sourceInfo?.width;
-        const height = sourceInfo?.height;
-        return [new DownloadInfoGif(url, data.filenamePrefix, `${width}x${height}`)];
-    }
-
     function getImageDownloads(data) {
         const url = data.url;
         const sourceInfo = data?.preview?.images[0]?.source;
         const width = sourceInfo?.width;
         const height = sourceInfo?.height;
-        return [new DownloadInfoImage(url, data.filenamePrefix, `${width}x${height}`)];
+
+        const quality = width && height ? `${width}x${height}` : null
+
+        return [new DownloadInfoImage(url, data.filenamePrefix, quality)];
     }
 
     function getGalleryDownloads(data) {
@@ -231,7 +219,7 @@ async function fetchPostData(postUrl) {
             const url = `https://i.redd.it/${k}${ext}`;
             urls.push(url)
         }
-        
+
         return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}-${data.id}`)];
     }
 
@@ -251,8 +239,7 @@ async function fetchPostData(postUrl) {
 
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
-                else if (urlExt === ".gif")
-                    downloads.push(...getGifDownloads(data));
+
                 else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
                     downloads.push(...getImageDownloads(data));
                 else if (urlExt === ".gifv")
