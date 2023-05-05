@@ -1,32 +1,32 @@
 {
-    "addons": {
-        "{0d567f96-4e07-448b-9531-0e867e707cd3}": {
-            "updates": [
-                {
-                    "version": "1.2.4",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.4/media_downloader_for_reddit-1.2.4.xpi"
-                },
-                {
-                    "version": "1.2.2",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.2/media_downloader_for_reddit-1.2.2.xpi"
-                },
-                {
-                    "version": "1.2.1",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.1/media_downloader_for_reddit-1.2.1.xpi"
-                },
-                {
-                    "version": "1.2.0",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.0/media_downloader_for_reddit-1.2.0.xpi"
-                },
-                {
-                    "version": "1.1.2",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.2/media_downloader_for_reddit-1.1.2.xpi"
-                },
-                {
-                    "version": "1.1.1",
-                    "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.1/media_downloader_for_reddit-1.1.1.xpi"
-                }
-            ]
+  "addons": {
+    "{0d567f96-4e07-448b-9531-0e867e707cd3}": {
+      "updates": [
+        {
+          "version": "1.2.4",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.4/media_downloader_for_reddit-1.2.4.xpi"
+        },
+        {
+          "version": "1.2.2",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.2/media_downloader_for_reddit-1.2.2.xpi"
+        },
+        {
+          "version": "1.2.1",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.1/media_downloader_for_reddit-1.2.1.xpi"
+        },
+        {
+          "version": "1.2.0",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.0/media_downloader_for_reddit-1.2.0.xpi"
+        },
+        {
+          "version": "1.1.2",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.2/media_downloader_for_reddit-1.1.2.xpi"
+        },
+        {
+          "version": "1.1.1",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.1.1/media_downloader_for_reddit-1.1.1.xpi"
         }
+      ]
     }
+  }
 }
