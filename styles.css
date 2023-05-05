@@ -27,7 +27,7 @@
 
 
 .v-dwnld-btn:hover {
-    background-color: #2d2d2e
+    background-color:#2d2d2e;
 }
 
 .v-dwnld-btn span {
@@ -66,7 +66,16 @@
     padding: 12px 8px;
     border-bottom: 1px solid var(--color-tone-3);
     text-align: center;
+    /* display: flex;
+  justify-content: center; */
 }
+
+.v-dwnld-btn-dropdown ul li span {
+    padding-left: 6px;
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
 
 .v-dwnld-btn-dropdown ul li:last-child {
     border-bottom: none;
@@ -75,6 +84,7 @@
 .v-dwnld-btn-dropdown ul li:hover {
     cursor: pointer;
     color: white;
-    text-decoration: underline;
-    /* background-color: var(--color-tone-7); */
+    background-color: var(--color-tone-7);
+    /* text-decoration: underline; */
+    /* background-color: var(--color-secondary-background); */
 }

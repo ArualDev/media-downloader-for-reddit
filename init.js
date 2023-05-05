@@ -34,6 +34,21 @@ function getRSUrl(baseUrl, fallbackUrl, audioUrl = "false") {
     return `https://sd.rapidsave.com/download-sd.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
 }
 
+async function fetchFileSize(url) {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => {
+            const fileSize = parseInt(response.headers.get('Content-Length'));
+            return fileSize;
+        })
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+    if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + ' MB';
+    return (bytes / 1073741824).toFixed(2) + ' GB';
+}
+
 // TODO: Is this class even necessary
 class PostData {
     constructor(url, title, downloads) {
@@ -45,12 +60,13 @@ class PostData {
 
 // TODO: Add file size. Should be possible with a simple http request.
 class DownloadInfo {
-    constructor(link, filenamePrefix = "file", quality = "") {
+    constructor(link, filenamePrefix = "file", quality = "", fileSize) {
         this.contentType = "Content"
         this.fileExt = "";
         this.filenamePrefix = filenamePrefix;
         this.link = link;
         this.quality = quality;
+        this.fileSize = fileSize;
     }
 
     getFullFileName() {
@@ -62,19 +78,24 @@ class DownloadInfo {
     download() {
         downloadContent(this.link, this.getFullFileName())
     }
+
+    // TODO: Implement
+    getFileSize() {
+
+    }
 }
 
 class DownloadInfoVideo extends DownloadInfo {
-    constructor(link, filenamePrefix = "video", quality) {
-        super(link, filenamePrefix, quality);
+    constructor(link, filenamePrefix = "video", quality, fileSize) {
+        super(link, filenamePrefix, quality, fileSize);
         this.contentType = "Video";
         this.fileExt = ".mp4";
     }
 }
 
 class DownloadInfoAudio extends DownloadInfo {
-    constructor(link, filenamePrefix = "audio") {
-        super(link, filenamePrefix);
+    constructor(link, filenamePrefix = "audio", fileSize) {
+        super(link, filenamePrefix, null, fileSize);
         this.contentType = "Audio";
         this.fileExt = ".mp4";
     }
@@ -85,8 +106,8 @@ class DownloadInfoAudio extends DownloadInfo {
 }
 
 class DownloadInfoImage extends DownloadInfo {
-    constructor(link, filenamePrefix = "image", quality) {
-        super(link, filenamePrefix, quality);
+    constructor(link, filenamePrefix = "image", quality, fileSize) {
+        super(link, filenamePrefix, quality, fileSize);
         this.fileExt = fileExtFromUrl(this.link) ?? ".png";
         const isGif = this.fileExt === ".gif";
         this.contentType = isGif ? "GIF" : "Image";
@@ -94,8 +115,8 @@ class DownloadInfoImage extends DownloadInfo {
 }
 
 class DownloadInfoGallery extends DownloadInfo {
-    constructor(links, filenamePrefix = "image", folderPrefix = "gallery") {
-        super(null, filenamePrefix);
+    constructor(links, filenamePrefix = "image", folderPrefix = "gallery", fileSize) {
+        super(null, filenamePrefix, null, fileSize);
         this.urls = links;
         this.contentType = "Gallery";
         this.folderPrefix = folderPrefix;
@@ -129,7 +150,6 @@ async function fetchPostData(postUrl) {
             return downloads;
 
         const fallbackUrl = vidData?.fallback_url;
-
         const originalHeight = vidData?.height ?? null;
 
         // Check if the video URL matches the standard Reddit video URL pattern
@@ -142,11 +162,13 @@ async function fetchPostData(postUrl) {
         if (!hasAudio)
             audioUrl = null;
 
+        const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : 0;
+        const originalVideoFileSize = await fetchFileSize(fallbackUrl);
         const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
 
         // Add the original video link
         downloads.push(
-            new DownloadInfoVideo(url, data.filenamePrefix, `${originalHeight}p`)
+            new DownloadInfoVideo(url, data.filenamePrefix, `${originalHeight}p`, originalVideoFileSize + audioFileSize)
         )
 
         if (!matches)
@@ -158,25 +180,27 @@ async function fetchPostData(postUrl) {
                 continue;
             const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
             const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`)
+            const videoFileSize = await fetchFileSize(fallbackUrl);
+            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, videoFileSize + audioFileSize)
             downloads.push(downloadInfo)
         }
 
         if (hasAudio) {
-            downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix));
+            downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, audioFileSize));
         }
 
         return downloads;
     }
 
-    function getGifvDownloads(data) {
+    async function getGifvDownloads(data) {
         const downloads = [];
         const fallbackUrl = data?.preview?.reddit_video_preview?.fallback_url;
         const originalHeight = data?.preview?.images[0]?.source?.height;
+        const fileSize = await fetchFileSize(fallbackUrl);
 
         // Add the original video link
         downloads.push(
-            new DownloadInfoVideo(fallbackUrl, data.filenamePrefix, `${originalHeight}p`)
+            new DownloadInfoVideo(fallbackUrl, data.filenamePrefix, `${originalHeight}p`, fileSize)
         )
 
         // Check if the video URL matches the standard Reddit video URL pattern
@@ -185,38 +209,41 @@ async function fetchPostData(postUrl) {
         if (matches.length === 0)
             return downloads;
 
+        // TODO: Make it into its own function. It's basically the same code as in videos
         // Add alternative resolutions
         for (const height of REDDIT_VIDEO_HEIGHTS) {
             if (height >= originalHeight)
                 continue;
             const url = `${matches[1]}${height}${matches[3]}`;
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`)
+            const fileSize = await fetchFileSize(url);
+            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, fileSize)
             downloads.push(downloadInfo)
         }
         return downloads;
     }
 
-    function getImageDownloads(data) {
+    async function getImageDownloads(data) {
         const url = data.url;
         const sourceInfo = data?.preview?.images[0]?.source;
         const width = sourceInfo?.width;
         const height = sourceInfo?.height;
-
+        const fileSize = await fetchFileSize(url);
         const quality = width && height ? `${width}x${height}` : null
-
-        return [new DownloadInfoImage(url, data.filenamePrefix, quality)];
+        return [new DownloadInfoImage(url, data.filenamePrefix, quality, fileSize)];
     }
 
-    function getGalleryDownloads(data) {
+    async function getGalleryDownloads(data) {
         const metadata = data.media_metadata;
         const urls = [];
 
         // Get the keys in the right order
         const keys = data.gallery_data.items.map(item => item.media_id);
 
+        let fileSizeSum = 0;
         for (const k of keys) {
             const ext = `.${metadata[k].m.split("/")[1]}`;
             const url = `https://i.redd.it/${k}${ext}`;
+            fileSizeSum += await fetchFileSize(url);
             urls.push(url)
         }
 
@@ -241,11 +268,11 @@ async function fetchPostData(postUrl) {
                     downloads.push(...(await getVideoDownloads(data)));
 
                 else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
-                    downloads.push(...getImageDownloads(data));
+                    downloads.push(...(await getImageDownloads(data)));
                 else if (urlExt === ".gifv")
-                    downloads.push(...getGifvDownloads(data));
+                    downloads.push(...await getGifvDownloads(data));
                 else if (data?.is_gallery)
-                    downloads.push(...getGalleryDownloads(data));
+                    downloads.push(...await getGalleryDownloads(data));
 
                 const postData = new PostData(postUrl, data?.title, downloads);
                 resolve(postData);
@@ -314,7 +341,14 @@ function handleInjectButton(postData, injectContainer) {
 
     for (const download of postData.downloads) {
         const listElement = document.createElement("li");
-        listElement.textContent = `Download ${download.quality} ${download.contentType}`;
+        listElement.textContent = download.quality
+            ? `Download ${download.quality} ${download.contentType}`
+            : `Download ${download.contentType}`
+
+        const sizeSpan = document.createElement("span");
+        sizeSpan.textContent = `( ${formatFileSize(download.fileSize)})`;
+        listElement.appendChild(sizeSpan);
+
         listElement.addEventListener("click", _ => {
             download.download();
         });
