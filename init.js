@@ -247,7 +247,7 @@ async function fetchPostData(postUrl) {
             urls.push(url)
         }
 
-        return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}-${data.id}`)];
+        return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}-${data.id}`, fileSizeSum)];
     }
 
     return new Promise(resolve => {
