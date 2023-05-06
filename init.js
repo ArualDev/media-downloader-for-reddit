@@ -302,6 +302,8 @@ function handleInjectButton(postData, injectContainer) {
     btn.textContent = getBtnText(postData.downloads[0]);
     btn.prepend(icon)
 
+    // btn.classList.add("YszYBnnIoNY8pZ6UwCivd");
+
 
     btn.classList.add("v-dwnld-btn");
     btn.setAttribute("title", "Download original");
