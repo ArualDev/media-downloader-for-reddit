@@ -1,7 +1,7 @@
-# Media Downloader for Reddit
-
 > **Warning**
 > Starting on June 19, 2023, Reddit will be introducing changes to its API. As a result, this extension may not function as intended beyond that date. It could potentially work well, lose some functionality, or stop working altogether. It is difficult to predict the exact implications of these changes at this time. I will do my best to ensure that as many features as possible continue to work.
+
+# Media Downloader for Reddit
 
 A browser extenison that makes it possible to download videos and GIFs from Reddit with just one click.
 
