@@ -58,7 +58,6 @@ class PostData {
     }
 }
 
-// TODO: Add file size. Should be possible with a simple http request.
 class DownloadInfo {
     constructor(link, filenamePrefix = "file", quality = "", fileSize) {
         this.contentType = "Content"
@@ -158,7 +157,8 @@ async function fetchPostData(postUrl) {
 
         let audioUrl = `${matches[1]}audio${matches[3]}`;
         // Check if the audio url file exists at that location.
-        const hasAudio = (await fetch(audioUrl)).ok;
+
+        const hasAudio = vidData.has_audio;
         if (!hasAudio)
             audioUrl = null;
 
@@ -365,10 +365,11 @@ function handleInjectButton(postData, injectContainer) {
         const dropdownRect = dropdown.getBoundingClientRect();
         const bodyRect = document.body.getBoundingClientRect();
         const topOff = wrapperRect.bottom - bodyRect.top;
-        const leftOff = wrapperRect.left - bodyRect.left - dropdownRect.width / 2 + wrapperRect.width / 2;
-        dropdown.style.top = `${topOff}px`
-        dropdown.style.left = `${leftOff}px`
+        const leftOff = wrapperRect.right - bodyRect.left - dropdownRect.width;
+        dropdown.style.top = `${topOff}px`;
+        dropdown.style.left = `${leftOff}px`;
     }
+    
 
     moreBtn.addEventListener("click", _ => {
         setDropdownActive(!dropdownActive)

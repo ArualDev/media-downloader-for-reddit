@@ -41,11 +41,16 @@
 }
 
 .v-dwnld-btn:first-child {
-    padding: 12px -6px 12px 6px
+    /* padding: 12px -6px 12px 6px */
+    /* color: red; */
+    padding-left: 6px;
+    padding-right: 4px;
 }
 
 .v-dwnld-btn:last-child {
-    padding: 12px 6px 12px -6px
+    padding: 12px 6px 12px -6px;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .v-dwnld-btn-dropdown {
