@@ -3,6 +3,10 @@
     "{0d567f96-4e07-448b-9531-0e867e707cd3}": {
       "updates": [
         {
+          "version": "1.2.6",
+          "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.6/media_downloader_for_reddit-1.2.6.xpi"
+        },
+        {
           "version": "1.2.5",
           "update_link": "https://github.com/ArualDev/media-downloader-for-reddit/releases/download/v1.2.5/media_downloader_for_reddit-1.2.5.xpi"
         },
