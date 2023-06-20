@@ -302,7 +302,7 @@ function handleInjectButton(postData, injectContainer) {
     btn.textContent = getBtnText(postData.downloads[0]);
     btn.prepend(icon)
 
-    // btn.classList.add("YszYBnnIoNY8pZ6UwCivd");
+    btn.classList.add("YszYBnnIoNY8pZ6UwCivd");
 
 
     btn.classList.add("v-dwnld-btn");
@@ -326,6 +326,7 @@ function handleInjectButton(postData, injectContainer) {
 
     moreBtn.prepend(moreIcon)
     moreBtn.classList.add("v-dwnld-btn");
+    moreBtn.classList.add("YszYBnnIoNY8pZ6UwCivd");
     btnWrapper.append(moreBtn);
 
     const dropdown = document.createElement("div");
@@ -373,8 +374,13 @@ function handleInjectButton(postData, injectContainer) {
 
     moreBtn.addEventListener("click", _ => {
         setDropdownActive(!dropdownActive)
+        moreBtn.blur();
         if (!dropdownActive)
             return;
+        updateDropdownPosition();
+    })
+
+    window.addEventListener("scroll", e => {
         updateDropdownPosition();
     })
 

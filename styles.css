@@ -32,25 +32,29 @@
 
 .v-dwnld-btn span {
     font-size: 1.4rem;
-    transform: translate(0, 5px);
 }
 
 .v-dwnld-btn:last-child span {
     font-size: 1.4rem;
-    transform: translate(0, 6px);
 }
 
 .v-dwnld-btn:first-child {
-    /* padding: 12px -6px 12px 6px */
-    /* color: red; */
     padding-left: 6px;
     padding-right: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }
 
 .v-dwnld-btn:last-child {
     padding: 12px 6px 12px -6px;
     padding-left: 2px;
     padding-right: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }
 
 .v-dwnld-btn-dropdown {
@@ -71,8 +75,6 @@
     padding: 12px 8px;
     border-bottom: 1px solid var(--color-tone-3);
     text-align: center;
-    /* display: flex;
-  justify-content: center; */
 }
 
 .v-dwnld-btn-dropdown ul li span {
@@ -88,8 +90,6 @@
 
 .v-dwnld-btn-dropdown ul li:hover {
     cursor: pointer;
-    color: white;
+    color: var(--color-tone-1);
     background-color: var(--color-tone-7);
-    /* text-decoration: underline; */
-    /* background-color: var(--color-secondary-background); */
 }
