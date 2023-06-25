@@ -308,6 +308,7 @@ function handleInjectButton(postData, injectContainer) {
     btn.classList.add("v-dwnld-btn");
     btn.setAttribute("title", "Download original");
     btn.addEventListener("click", _ => {
+        btn.blur();
         postData.downloads[0].download();
     })
 
