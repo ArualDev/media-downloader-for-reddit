@@ -1,3 +1,5 @@
+// TODO: Scrap this whole thing and move to TypeScript with a bundler and a front-end framework
+
 const REFRESH_INTERVAL_MS = 500;
 // There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
@@ -77,11 +79,6 @@ class DownloadInfo {
     download() {
         downloadContent(this.link, this.getFullFileName())
     }
-
-    // TODO: Implement
-    getFileSize() {
-
-    }
 }
 
 class DownloadInfoVideo extends DownloadInfo {
@@ -158,7 +155,7 @@ async function fetchPostData(postUrl) {
         let audioUrl = `${matches[1]}audio${matches[3]}`;
         // Check if the audio url file exists at that location.
 
-        const hasAudio = vidData.has_audio;
+        const hasAudio = !!vidData?.has_audio;
         if (!hasAudio)
             audioUrl = null;
 
@@ -264,12 +261,13 @@ async function fetchPostData(postUrl) {
 
                 const urlExt = fileExtFromUrl(data.url);
 
+                // TODO: Add support for the case when only the fallback source in the preview is avaliable
+                // TODO: Also, refactor this mess
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
-
                 else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
                     downloads.push(...(await getImageDownloads(data)));
-                else if (urlExt === ".gifv")
+                else if (data?.preview?.reddit_video_preview?.fallback_url)
                     downloads.push(...await getGifvDownloads(data));
                 else if (data?.is_gallery)
                     downloads.push(...await getGalleryDownloads(data));
