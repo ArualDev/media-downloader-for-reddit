@@ -1,13 +1,15 @@
-function downloadFromUrl(url, filename) {
+function downloadFromUrl(url, filename, saveAs = false) {
+	console.log(saveAs);
 	browser.downloads.download({
 		url: url,
-		filename: filename
+		filename: filename,
+		saveAs: saveAs
 	});
 }
 
 const messageActions = {
 	download: msg => {
-		downloadFromUrl(msg.url, msg.filename)
+		downloadFromUrl(msg.url, msg.filename, msg.saveAs)
 	}
 }
 

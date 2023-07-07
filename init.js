@@ -22,11 +22,12 @@ function fileExtFromUrl(url) {
     return matches ? matches[0] : null;
 }
 
-function downloadContent(url, filename) {
+function downloadContent(url, filename, saveAs = false) {
     browser.runtime.sendMessage({
         action: "download",
         url: url,
-        filename: filename
+        filename: filename,
+        saveAs: saveAs
     });
 }
 
@@ -76,8 +77,8 @@ class DownloadInfo {
         return `${this.filenamePrefix}${this.fileExt}`;
     }
 
-    download() {
-        downloadContent(this.link, this.getFullFileName())
+    download(saveAs = false) {
+        downloadContent(this.link, this.getFullFileName(), saveAs)
     }
 }
 
@@ -118,7 +119,7 @@ class DownloadInfoGallery extends DownloadInfo {
         this.folderPrefix = folderPrefix;
     }
 
-    download() {
+    download(saveAs) {
         function getRandomString(len) {
             const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
             let res = ""
@@ -135,8 +136,6 @@ class DownloadInfoGallery extends DownloadInfo {
         }
     }
 }
-
-// TODO: Add support for downloading galleries as .zip files
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
@@ -305,9 +304,9 @@ function handleInjectButton(postData, injectContainer) {
 
     btn.classList.add("v-dwnld-btn");
     btn.setAttribute("title", "Download original");
-    btn.addEventListener("click", _ => {
+    btn.addEventListener("click", e => {
         btn.blur();
-        postData.downloads[0].download();
+        postData.downloads[0].download(e.ctrlKey);
     })
 
     btnWrapper.append(btn);
@@ -351,8 +350,8 @@ function handleInjectButton(postData, injectContainer) {
         sizeSpan.textContent = `( ${formatFileSize(download.fileSize)})`;
         listElement.appendChild(sizeSpan);
 
-        listElement.addEventListener("click", _ => {
-            download.download();
+        listElement.addEventListener("click", e => {
+            download.download(e.ctrlKey);
         });
         dropDownList.appendChild(listElement);
     }
