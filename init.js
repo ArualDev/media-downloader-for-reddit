@@ -1,3 +1,4 @@
+// Watch out! You are about to look at some spaghetti code 🍝
 // TODO: Scrap this whole thing and move to TypeScript with a bundler and a front-end framework
 
 const REFRESH_INTERVAL_MS = 500;
