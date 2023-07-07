@@ -6,6 +6,14 @@ const REFRESH_INTERVAL_MS = 500;
 const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
 const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
+async function log(msg) {
+    const options = await browser.storage.sync.get('options')
+    if(!options || !options.options.enableLogging)
+        return;
+
+    console.log(`Media Downloader for Reddit - ${msg}`);
+}
+
 function permalinkToUrl(permalink) {
     return `https://reddit.com${permalink}`;
 }
@@ -24,6 +32,7 @@ function fileExtFromUrl(url) {
 }
 
 function downloadContent(url, filename, saveAs = false) {
+    log(`Download request: \nURL:\t${url}\nFile name:\t${filename}`)
     browser.runtime.sendMessage({
         action: "download",
         url: url,

@@ -1,5 +1,4 @@
 function downloadFromUrl(url, filename, saveAs = false) {
-	console.log(saveAs);
 	browser.downloads.download({
 		url: url,
 		filename: filename,
