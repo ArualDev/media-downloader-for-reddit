@@ -8,7 +8,7 @@ const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 async function log(msg) {
     const options = await browser.storage.sync.get('options')
-    if(!options || !options.options.enableLogging)
+    if (!options || !options.options.enableLogging)
         return;
 
     console.log(`Media Downloader for Reddit - ${msg}`);
@@ -45,6 +45,26 @@ function getRSUrl(baseUrl, fallbackUrl, audioUrl = "false") {
     if (!audioUrl)
         audioUrl = "false";
     return `https://sd.rapidsave.com/download-sd.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
+}
+
+async function getVidditUrls(postUrl) {
+    const url = 'https://viddit.red/';
+    const data = { url: postUrl };
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/x-www-form-urlencoded');
+
+    return fetch(url, { method: 'POST', headers: headers, body: new URLSearchParams(data).toString() })
+        .then(response => response.text())
+        .then(data => {
+            const originalUrlMatch = data.match(/<a\s.*id="dlbutton".*href="(https:\/\/.+)"\s/);
+            const originalUrl = originalUrlMatch?.[1];
+            return {
+                original: originalUrl
+            };
+        })
+        .catch(error => {
+            throw new Error(error)
+        });
 }
 
 async function fetchFileSize(url) {
@@ -170,7 +190,13 @@ async function fetchPostData(postUrl) {
 
         const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : 0;
         const originalVideoFileSize = await fetchFileSize(fallbackUrl);
-        const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
+        // const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
+
+        const vidditUrls = hasAudio ? await getVidditUrls(postUrl) : null;
+
+        const url = hasAudio
+            ? vidditUrls.original
+            : fallbackUrl;
 
         // Add the original video link
         downloads.push(
@@ -180,16 +206,19 @@ async function fetchPostData(postUrl) {
         if (!matches)
             return downloads;
 
-        // Add alternative resolutions
-        for (const height of REDDIT_VIDEO_HEIGHTS) {
-            if (height >= originalHeight)
-                continue;
-            const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
-            const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
-            const videoFileSize = await fetchFileSize(fallbackUrl);
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, videoFileSize + audioFileSize)
-            downloads.push(downloadInfo)
+        if (!vidditUrls) {
+            // Add alternative resolutions
+            for (const height of REDDIT_VIDEO_HEIGHTS) {
+                if (height >= originalHeight)
+                    continue;
+                const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
+                const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
+                const videoFileSize = await fetchFileSize(fallbackUrl);
+                const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, videoFileSize + audioFileSize)
+                downloads.push(downloadInfo)
+            }
         }
+
 
         if (hasAudio) {
             downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, audioFileSize));
@@ -270,7 +299,6 @@ async function fetchPostData(postUrl) {
 
                 const urlExt = fileExtFromUrl(data.url);
 
-                // TODO: Add support for the case when only the fallback source in the preview is avaliable
                 // TODO: Also, refactor this mess
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
@@ -378,7 +406,7 @@ function handleInjectButton(postData, injectContainer) {
         dropdown.style.top = `${topOff}px`;
         dropdown.style.left = `${leftOff}px`;
     }
-    
+
 
     moreBtn.addEventListener("click", _ => {
         setDropdownActive(!dropdownActive)
