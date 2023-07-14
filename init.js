@@ -8,7 +8,7 @@ const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 async function log(msg) {
     const options = await browser.storage.sync.get('options')
-    if(!options || !options.options.enableLogging)
+    if (!options || !options.options.enableLogging)
         return;
 
     console.log(`Media Downloader for Reddit - ${msg}`);
@@ -378,7 +378,7 @@ function handleInjectButton(postData, injectContainer) {
         dropdown.style.top = `${topOff}px`;
         dropdown.style.left = `${leftOff}px`;
     }
-    
+
 
     moreBtn.addEventListener("click", _ => {
         setDropdownActive(!dropdownActive)
@@ -424,12 +424,17 @@ function handleFeed() {
 
         const url = permalinkToUrl(permalink);
         const injectContainer = drawer.lastChild;
-        fetchPostData(url)
-            .then(postData => {
-                if (!postData || postData.downloads.length === 0)
-                    return;
-                handleInjectButton(postData, injectContainer);
-            })
+        const handleMouseOver = () => {
+            fetchPostData(url)
+                .then(postData => {
+                    if (!postData || postData.downloads.length === 0)
+                        return;
+                    handleInjectButton(postData, injectContainer);
+                })
+            p.removeEventListener('mouseover', handleMouseOver)
+        }
+
+        p.addEventListener('mouseover', handleMouseOver)
     }
 }
 
