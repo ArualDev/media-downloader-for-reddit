@@ -417,7 +417,8 @@ function handleFeed() {
         p.setAttribute("vid-downloader-checked", true)
 
         const drawer = p.querySelector("._3-miAEojrCvx_4FQ8x3P-s");
-        const permalink = p.querySelector("a[data-click-id=body]")?.getAttribute("href");
+        const permalink = p.querySelector("a[data-click-id=body]")?.getAttribute("href")
+            ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
         if (!permalink)
             continue;
 
