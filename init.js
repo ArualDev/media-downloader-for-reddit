@@ -418,15 +418,25 @@ function handleFeed() {
 
         const drawer = p.querySelector("._3-miAEojrCvx_4FQ8x3P-s");
         const permalink = p.querySelector("a[data-click-id=body]")?.getAttribute("href")
-            ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
+            // ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
         if (!permalink)
             continue;
 
         const url = permalinkToUrl(permalink);
         const injectContainer = drawer.lastChild;
         const handleMouseOver = () => {
+            const loadingWrapper = document.createElement('div');
+            loadingWrapper.classList.add("v-dwnld-loading-indicator");
+            
+            const loadingIcon = document.createElement('span');
+            loadingIcon.textContent = "progress_activity";
+            loadingIcon.classList.add("material-symbols-outlined");
+
+            loadingWrapper.appendChild(loadingIcon);
+            injectContainer.appendChild(loadingWrapper);
             fetchPostData(url)
                 .then(postData => {
+                    loadingWrapper.remove();
                     if (!postData || postData.downloads.length === 0)
                         return;
                     handleInjectButton(postData, injectContainer);
