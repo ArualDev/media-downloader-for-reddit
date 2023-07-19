@@ -50,6 +50,8 @@ function getRSUrl(baseUrl, fallbackUrl, audioUrl = "false") {
 async function fetchFileSize(url) {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
+            if (!response.ok)
+                return null;
             const fileSize = parseInt(response.headers.get('Content-Length'));
             return fileSize;
         })
@@ -163,12 +165,12 @@ async function fetchPostData(postUrl) {
 
         let audioUrl = `${matches[1]}audio${matches[3]}`;
         // Check if the audio url file exists at that location.
-
-        const hasAudio = !!vidData?.has_audio;
+        
+        const audioFileSize = await fetchFileSize(audioUrl);
+        const hasAudio = !!audioFileSize;
         if (!hasAudio)
             audioUrl = null;
 
-        const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : 0;
         const originalVideoFileSize = await fetchFileSize(fallbackUrl);
         const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
 

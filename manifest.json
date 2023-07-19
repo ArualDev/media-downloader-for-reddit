@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Media Downloader for Reddit",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Makes it easy to download media content from Reddit.",
   "homepage_url": "https://github.com/ArualDev/media-downloader-for-reddit",
   "browser_specific_settings": {
