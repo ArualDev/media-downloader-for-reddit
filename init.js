@@ -165,7 +165,7 @@ async function fetchPostData(postUrl) {
 
         let audioUrl = `${matches[1]}audio${matches[3]}`;
         // Check if the audio url file exists at that location.
-        
+
         const audioFileSize = await fetchFileSize(audioUrl);
         const hasAudio = !!audioFileSize;
         if (!hasAudio)
@@ -420,16 +420,27 @@ function handleFeed() {
 
         const drawer = p.querySelector("._3-miAEojrCvx_4FQ8x3P-s");
         const permalink = p.querySelector("a[data-click-id=body]")?.getAttribute("href")
-            // ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
+        // ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
         if (!permalink)
             continue;
 
         const url = permalinkToUrl(permalink);
         const injectContainer = drawer.lastChild;
+
+        const downloadBtnPlaceholder = document.createElement('div');
+        downloadBtnPlaceholder.classList.add('v-dwnld-download-placeholder');
+        const downloadBtnPlaceholderIcon = document.createElement('span')
+        downloadBtnPlaceholderIcon.textContent = "download";
+        downloadBtnPlaceholderIcon.classList.add("material-symbols-outlined");
+        downloadBtnPlaceholder.appendChild(downloadBtnPlaceholderIcon);
+
+        injectContainer.appendChild(downloadBtnPlaceholder);
+
         const handleMouseOver = () => {
+            downloadBtnPlaceholder.remove();
             const loadingWrapper = document.createElement('div');
             loadingWrapper.classList.add("v-dwnld-loading-indicator");
-            
+
             const loadingIcon = document.createElement('span');
             loadingIcon.textContent = "progress_activity";
             loadingIcon.classList.add("material-symbols-outlined");
@@ -443,10 +454,10 @@ function handleFeed() {
                         return;
                     handleInjectButton(postData, injectContainer);
                 })
-            p.removeEventListener('mouseover', handleMouseOver)
+            downloadBtnPlaceholder.removeEventListener('mouseover', handleMouseOver)
         }
 
-        p.addEventListener('mouseover', handleMouseOver)
+        downloadBtnPlaceholder.addEventListener('mouseover', handleMouseOver)
     }
 }
 

@@ -3,12 +3,13 @@
 
 @keyframes rotation {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-      transform: rotate(359deg);
+        transform: rotate(359deg);
     }
-  }
+}
 
 .material-symbols-outlined {
     font-variation-settings:
@@ -18,7 +19,9 @@
         'opsz' 48
 }
 
-.v-dwnld-btn-wrapper, .v-dwnld-loading-indicator {
+.v-dwnld-btn-wrapper,
+.v-dwnld-loading-indicator,
+.v-dwnld-download-placeholder {
     display: flex;
     align-items: center;
     width: fit-content;
@@ -27,8 +30,18 @@
     margin-left: auto;
 }
 
+.v-dwnld-download-placeholder {
+    opacity: 0.5;
+}
+
 .v-dwnld-loading-indicator {
     animation: rotation 2s infinite linear;
+}
+
+.v-dwnld-loading-indicator,
+.v-dwnld-download-placeholder {
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .v-dwnld-btn {
@@ -40,7 +53,7 @@
 
 
 .v-dwnld-btn:hover {
-    background-color:#2d2d2e;
+    background-color: #2d2d2e;
 }
 
 .v-dwnld-btn span {
