@@ -64,7 +64,6 @@ function formatFileSize(bytes) {
     return (bytes / 1073741824).toFixed(2) + ' GB';
 }
 
-// TODO: Is this class even necessary
 class PostData {
     constructor(url, title, downloads) {
         this.url = url;
@@ -272,7 +271,6 @@ async function fetchPostData(postUrl) {
 
                 const urlExt = fileExtFromUrl(data.url);
 
-                // TODO: Add support for the case when only the fallback source in the preview is avaliable
                 // TODO: Also, refactor this mess
                 if (data?.is_video)
                     downloads.push(...(await getVideoDownloads(data)));
@@ -420,43 +418,55 @@ function handleFeed() {
 
         const drawer = p.querySelector("._3-miAEojrCvx_4FQ8x3P-s");
         const permalink = p.querySelector("a[data-click-id=body]")?.getAttribute("href")
-        // ?? p.querySelector("a[data-click-id=comments]")?.getAttribute("href");
         if (!permalink)
             continue;
 
         const url = permalinkToUrl(permalink);
         const injectContainer = drawer.lastChild;
+        let toDownload = false;
+        let toDownloadSaveAs = false;
 
-        const downloadBtnPlaceholder = document.createElement('div');
+        const downloadBtnPlaceholderWrapper = document.createElement('div');
+        downloadBtnPlaceholderWrapper.classList.add('v-dwnld-download-placeholder-wrapper');
+
+        const downloadBtnPlaceholder = document.createElement('button');
         downloadBtnPlaceholder.classList.add('v-dwnld-download-placeholder');
+        downloadBtnPlaceholder.classList.add("YszYBnnIoNY8pZ6UwCivd");
+        downloadBtnPlaceholder.addEventListener('click', e => {
+            toDownload = true;
+            toDownloadSaveAs = e.ctrlKey;
+        })
+
         const downloadBtnPlaceholderIcon = document.createElement('span')
         downloadBtnPlaceholderIcon.textContent = "download";
         downloadBtnPlaceholderIcon.classList.add("material-symbols-outlined");
+        downloadBtnPlaceholderIcon.classList.add("v-dwnld-download-placeholder-icon");
+
         downloadBtnPlaceholder.appendChild(downloadBtnPlaceholderIcon);
 
-        injectContainer.appendChild(downloadBtnPlaceholder);
+        downloadBtnPlaceholderWrapper.appendChild(downloadBtnPlaceholder);
+        injectContainer.appendChild(downloadBtnPlaceholderWrapper);
+
 
         const handleMouseOver = () => {
-            downloadBtnPlaceholder.remove();
-            const loadingWrapper = document.createElement('div');
-            loadingWrapper.classList.add("v-dwnld-loading-indicator");
-
             const loadingIcon = document.createElement('span');
             loadingIcon.textContent = "progress_activity";
             loadingIcon.classList.add("material-symbols-outlined");
+            loadingIcon.classList.add("v-dwnld-download-loading-icon");
 
-            loadingWrapper.appendChild(loadingIcon);
-            injectContainer.appendChild(loadingWrapper);
+            downloadBtnPlaceholderIcon.remove();
+            downloadBtnPlaceholder.appendChild(loadingIcon);
             fetchPostData(url)
                 .then(postData => {
-                    loadingWrapper.remove();
+                    downloadBtnPlaceholderWrapper.remove();
                     if (!postData || postData.downloads.length === 0)
                         return;
                     handleInjectButton(postData, injectContainer);
+                    if (toDownload)
+                        postData.downloads[0].download(toDownloadSaveAs);
                 })
             downloadBtnPlaceholder.removeEventListener('mouseover', handleMouseOver)
         }
-
         downloadBtnPlaceholder.addEventListener('mouseover', handleMouseOver)
     }
 }

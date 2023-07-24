@@ -20,8 +20,7 @@
 }
 
 .v-dwnld-btn-wrapper,
-.v-dwnld-loading-indicator,
-.v-dwnld-download-placeholder {
+.v-dwnld-download-placeholder-wrapper {
     display: flex;
     align-items: center;
     width: fit-content;
@@ -31,17 +30,22 @@
 }
 
 .v-dwnld-download-placeholder {
-    opacity: 0.5;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 1.4rem;
 }
 
-.v-dwnld-loading-indicator {
+.v-dwnld-download-placeholder-icon {
+    opacity: 0.3;
+}
+
+.v-dwnld-download-loading-icon {
     animation: rotation 2s infinite linear;
 }
 
-.v-dwnld-loading-indicator,
-.v-dwnld-download-placeholder {
-    padding-left: 1rem;
-    padding-right: 1rem;
+.v-dwnld-download-loading-icon,
+.v-dwnld-download-placeholder-icon {
+    min-width: 100px;
 }
 
 .v-dwnld-btn {
@@ -92,8 +96,6 @@
     background-color: var(--color-tone-6);
     border-radius: 2px;
 }
-
-.v-dwnld-btn-dropdown ul {}
 
 .v-dwnld-btn-dropdown ul li {
     font-size: 0.8rem;
