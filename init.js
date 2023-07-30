@@ -162,7 +162,7 @@ async function fetchPostData(postUrl) {
         const dashRegexStandard = /(https:\/\/v\.redd\.it\/[\w-]+\/DASH_)(\d{3,4})(\.mp4.*)/;
         const matches = fallbackUrl.match(dashRegexStandard);
 
-        let audioUrl = `${matches[1]}audio${matches[3]}`;
+        let audioUrl = `${matches[1]}AUDIO_64${matches[3]}`;
         // Check if the audio url file exists at that location.
 
         const audioFileSize = await fetchFileSize(audioUrl);
@@ -188,6 +188,8 @@ async function fetchPostData(postUrl) {
             const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
             const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
             const videoFileSize = await fetchFileSize(fallbackUrl);
+            if (!videoFileSize)
+                continue;
             const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, videoFileSize + audioFileSize)
             downloads.push(downloadInfo)
         }
