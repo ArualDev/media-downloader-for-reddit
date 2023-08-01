@@ -41,10 +41,10 @@ function downloadContent(url, filename, saveAs = false) {
     });
 }
 
-function getRSUrl(baseUrl, fallbackUrl, audioUrl = "false") {
+function getRSUrl(baseUrl, fallbackUrl, audioUrl = null, alternative = false) {
     if (!audioUrl)
         audioUrl = "false";
-    return `https://sd.rapidsave.com/download-sd.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
+    return `https://sd.rapidsave.com/download${alternative ? '-sd' : ''}.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
 }
 
 async function fetchFileSize(url) {
@@ -54,6 +54,37 @@ async function fetchFileSize(url) {
                 return null;
             const fileSize = parseInt(response.headers.get('Content-Length'));
             return fileSize;
+        })
+}
+
+async function fetchVideoQualities(playlistUrl) {
+    return fetch(playlistUrl)
+        .then(res => res.text())
+        .then(res => {
+            const pattern = /<BaseURL>DASH_(\w+).mp4<\/BaseURL>/g;
+            const matches = res.matchAll(pattern);
+
+            const vids = [];
+            const audio = [];
+
+            for (const match of matches) {
+                if (match[1].includes('AUDIO')) {
+                    audio.push(
+                        Number(match[1].split('_')[1])
+                    );
+                    continue;
+                }
+                vids.push(
+                    Number(match[1])
+                );
+            }
+            // Implicitly converts strings to numbers for comparison
+            vids.sort((a, b) => b - a);
+            audio.sort((a, b) => b - a);
+            return {
+                video: vids,
+                audio: audio
+            };
         })
 }
 
@@ -156,45 +187,44 @@ async function fetchPostData(postUrl) {
             return downloads;
 
         const fallbackUrl = vidData?.fallback_url;
-        const originalHeight = vidData?.height ?? null;
+        const originalQuality = vidData?.height ?? null;
 
         // Check if the video URL matches the standard Reddit video URL pattern
         const dashRegexStandard = /(https:\/\/v\.redd\.it\/[\w-]+\/DASH_)(\d{3,4})(\.mp4.*)/;
         const matches = fallbackUrl.match(dashRegexStandard);
 
-        let audioUrl = `${matches[1]}AUDIO_64${matches[3]}`;
-        // Check if the audio url file exists at that location.
+        const qualities = await fetchVideoQualities(vidData.dash_url)
 
-        const audioFileSize = await fetchFileSize(audioUrl);
-        const hasAudio = !!audioFileSize;
-        if (!hasAudio)
-            audioUrl = null;
+        const hasAudio = qualities.audio.length > 0;
+        let audioUrl = hasAudio ? `${matches[1]}AUDIO_${qualities.audio[0]}${matches[3]}` : null;
+
+        const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : null;
 
         const originalVideoFileSize = await fetchFileSize(fallbackUrl);
-        const url = getRSUrl(postUrl, fallbackUrl, audioUrl)
+        const url = getRSUrl(postUrl, fallbackUrl, audioUrl, false)
 
         // Add the original video link
         downloads.push(
-            new DownloadInfoVideo(url, data.filenamePrefix, `${originalHeight}p`, originalVideoFileSize + audioFileSize)
+            new DownloadInfoVideo(url, data.filenamePrefix, `${originalQuality}p`, originalVideoFileSize + audioFileSize)
         )
 
         if (!matches)
             return downloads;
 
         // Add alternative resolutions
-        for (const height of REDDIT_VIDEO_HEIGHTS) {
-            if (height >= originalHeight)
+        for (const quality of qualities.video) {
+            if (quality >= originalQuality)
                 continue;
-            const fallbackUrl = `${matches[1]}${height}${matches[3]}`;
-            const url = getRSUrl(postUrl, fallbackUrl, audioUrl);
+            const fallbackUrl = `${matches[1]}${quality}${matches[3]}`;
+            const url = getRSUrl(postUrl, fallbackUrl, audioUrl, true);
             const videoFileSize = await fetchFileSize(fallbackUrl);
             if (!videoFileSize)
                 continue;
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, videoFileSize + audioFileSize)
+            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${quality}p`, videoFileSize + audioFileSize)
             downloads.push(downloadInfo)
         }
 
-        if (hasAudio) {
+        if (hasAudio && audioFileSize) {
             downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, audioFileSize));
         }
 
