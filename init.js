@@ -78,7 +78,7 @@ async function fetchVideoQualities(playlistUrl) {
                     Number(match[1])
                 );
             }
-            // Implicitly converts strings to numbers for comparison
+
             vids.sort((a, b) => b - a);
             audio.sort((a, b) => b - a);
             return {
@@ -133,8 +133,8 @@ class DownloadInfoVideo extends DownloadInfo {
 }
 
 class DownloadInfoAudio extends DownloadInfo {
-    constructor(link, filenamePrefix = "audio", fileSize) {
-        super(link, filenamePrefix, null, fileSize);
+    constructor(link, filenamePrefix = "audio", quality, fileSize) {
+        super(link, filenamePrefix, quality, fileSize);
         this.contentType = "Audio";
         this.fileExt = ".mp4";
     }
@@ -196,7 +196,7 @@ async function fetchPostData(postUrl) {
         const qualities = await fetchVideoQualities(vidData.dash_url)
 
         const hasAudio = qualities.audio.length > 0;
-        let audioUrl = hasAudio ? `${matches[1]}AUDIO_${qualities.audio[0]}${matches[3]}` : null;
+        const audioUrl = hasAudio ? `${matches[1]}AUDIO_${qualities.audio[0]}${matches[3]}` : null;
 
         const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : null;
 
@@ -225,7 +225,7 @@ async function fetchPostData(postUrl) {
         }
 
         if (hasAudio && audioFileSize) {
-            downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, audioFileSize));
+            downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${qualities.audio[0]}Kbps`, audioFileSize));
         }
 
         return downloads;
