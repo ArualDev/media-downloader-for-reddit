@@ -193,7 +193,6 @@ async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
         const options = (await browser.storage.sync.get('options'))?.options;
         const useCustomServer = options && options.useCustomServer;
-        console.log(useCustomServer);
 
         const downloads = [];
         const vidData = data.media?.reddit_video;

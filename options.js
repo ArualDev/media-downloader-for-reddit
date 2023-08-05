@@ -38,7 +38,6 @@ async function saveOptionsFromDom() {
         useCustomServer: useCustomServerCB.checked,
         customServerAddress: customServerAddressTx.value
     };
-    console.log(options);
     await browser.storage.sync.set({options: options});
     return;
 }
