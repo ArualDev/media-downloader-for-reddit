@@ -29,6 +29,7 @@ browser.storage.sync.get('options').then(async res => {
         await browser.storage.sync.set({ options: options })
     }
     loadOptionsToDom(options);
+    updateCustomServerAddressVisibility();
 });
 
 async function saveOptionsFromDom() {
@@ -49,7 +50,7 @@ function loadOptionsToDom(options) {
 }
 
 function updateCustomServerAddressVisibility() {
-    customServerAddressTx.parentElement.style.display = useCustomServerCB.checked ? 'block': 'none';
+    customServerAddressTx.parentElement.style.display = useCustomServerCB.checked ? 'inherit': 'none';
 }
 
 useCustomServerCB.addEventListener('change', updateCustomServerAddressVisibility)
@@ -62,5 +63,3 @@ resetDefaultBtn.addEventListener('click', _ => {
     loadOptionsToDom(defaultOptions);
     saveOptionsFromDom();
 })
-
-updateCustomServerAddressVisibility();
