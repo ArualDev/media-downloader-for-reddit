@@ -9,10 +9,15 @@ function downloadFromUrl(url, filename, saveAs = false) {
 const messageActions = {
 	download: msg => {
 		downloadFromUrl(msg.url, msg.filename, msg.saveAs)
+	},
+	getVersion: (message, sender, sendResponse) => {
+		const manifest = browser.runtime.getManifest();
+		const extensionVersion = manifest.version;
+		sendResponse(extensionVersion);
 	}
 }
 
-browser.runtime.onMessage.addListener(message => {
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	if (message.action in messageActions)
-		messageActions[message.action](message);
+		messageActions[message.action](message, sender, sendResponse);
 });

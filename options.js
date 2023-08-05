@@ -1,23 +1,66 @@
 const enableLoggingCB = document.querySelector('#enable-logging-cb');
+const useCustomServerCB = document.querySelector('#use-custom-server-cb');
+const customServerAddressTx = document.querySelector('#custom-server-address-tx');
 
-async function saveOptions(enableLogging = false) {
-    const options = {
-        enableLogging: enableLogging
-    };
-    browser.storage.sync.set({options: options});
+const saveBtn = document.querySelector('#save-btn');
+const resetDefaultBtn = document.querySelector('#reset-default-btn');
+
+const defaultOptions = {
+    enableLogging: false,
+    useCustomServer: false,
+    customServerAddress: 'http://localhost:21370'
+}
+
+function setDefaultsIfUndefined(options) {
+    let modified = false;
+    for (const k in defaultOptions) {
+        if (!options.hasOwnProperty(k)) {
+            options[k] = defaultOptions[k]
+            modified = true;
+        }
+    }
+    return modified;
 }
 
 browser.storage.sync.get('options').then(async res => {
-    let options = res;
-    if(!res)
-        options = await saveOptions();
-    loadOptions(options);
+    const options = res.options ?? {};
+    const modified = setDefaultsIfUndefined(options);
+    if (modified) {
+        await browser.storage.sync.set({ options: options })
+    }
+    loadOptionsToDom(options);
 });
 
-function loadOptions(options) {
-    enableLoggingCB.checked = options.options.enableLogging;
+async function saveOptionsFromDom() {
+    const options = {
+        enableLogging: enableLoggingCB.checked,
+        useCustomServer: useCustomServerCB.checked,
+        customServerAddress: customServerAddressTx.value
+    };
+    console.log(options);
+    await browser.storage.sync.set({options: options});
+    return;
 }
 
-enableLoggingCB.addEventListener('change', e => {
-    saveOptions(enableLoggingCB.checked)
-});
+function loadOptionsToDom(options) {
+    enableLoggingCB.checked = options.enableLogging;
+    useCustomServerCB.checked = options.useCustomServer;
+    customServerAddressTx.value = options.customServerAddress;
+}
+
+function updateCustomServerAddressVisibility() {
+    customServerAddressTx.parentElement.style.display = useCustomServerCB.checked ? 'block': 'none';
+}
+
+useCustomServerCB.addEventListener('change', updateCustomServerAddressVisibility)
+
+saveBtn.addEventListener('click', _ => {
+    saveOptionsFromDom();
+})
+
+resetDefaultBtn.addEventListener('click', _ => {
+    loadOptionsToDom(defaultOptions);
+    saveOptionsFromDom();
+})
+
+updateCustomServerAddressVisibility();

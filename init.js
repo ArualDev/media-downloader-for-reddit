@@ -11,7 +11,13 @@ async function log(msg) {
     if (!options || !options.options.enableLogging)
         return;
 
-    console.log(`Media Downloader for Reddit - ${msg}`);
+    console.log(`Media Downloader for Reddit v${await getVersion()} - ${msg}`);
+}
+
+async function getVersion() {
+    return await browser.runtime.sendMessage({
+        action: "getVersion",
+    });
 }
 
 function permalinkToUrl(permalink) {
@@ -45,6 +51,10 @@ function getRSUrl(baseUrl, fallbackUrl, audioUrl = null, alternative = false) {
     if (!audioUrl)
         audioUrl = "false";
     return `https://sd.rapidsave.com/download${alternative ? '-sd' : ''}.php?permalink=${baseUrl}&video_url=${fallbackUrl}&audio_url=${audioUrl}`;
+}
+
+function getCustomServerUrl(fallbackUrl, audioUrl) {
+    return `http:localhost:21370/combine?video_url=${fallbackUrl}&audio_url=${audioUrl}`;
 }
 
 async function fetchFileSize(url) {
@@ -181,6 +191,10 @@ class DownloadInfoGallery extends DownloadInfo {
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
+        const options = (await browser.storage.sync.get('options'))?.options;
+        const useCustomServer = options && options.useCustomServer;
+        console.log(useCustomServer);
+
         const downloads = [];
         const vidData = data.media?.reddit_video;
         if (!vidData)
@@ -201,7 +215,10 @@ async function fetchPostData(postUrl) {
         const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : null;
 
         const originalVideoFileSize = await fetchFileSize(fallbackUrl);
-        const url = getRSUrl(postUrl, fallbackUrl, audioUrl, false)
+
+        const url = useCustomServer
+            ? getCustomServerUrl(fallbackUrl, audioUrl)
+            : getRSUrl(postUrl, fallbackUrl, audioUrl, false);
 
         // Add the original video link
         downloads.push(
@@ -216,7 +233,10 @@ async function fetchPostData(postUrl) {
             if (quality >= originalQuality)
                 continue;
             const fallbackUrl = `${matches[1]}${quality}${matches[3]}`;
-            const url = getRSUrl(postUrl, fallbackUrl, audioUrl, true);
+            const url = useCustomServer
+                ? getCustomServerUrl(fallbackUrl, audioUrl)
+                : getRSUrl(postUrl, fallbackUrl, audioUrl, false);
+
             const videoFileSize = await fetchFileSize(fallbackUrl);
             if (!videoFileSize)
                 continue;
@@ -355,8 +375,6 @@ function handleInjectButton(postData, injectContainer) {
 
     injectContainer.appendChild(btnWrapper)
 
-    // if(postData.downloads.length === 1)
-    //     return;
     const moreBtn = document.createElement('button');
     moreBtn.setAttribute("title", "More download options");
 
@@ -556,9 +574,12 @@ function checkForChangesAndInject() {
     handleFeed();
 }
 
-// This is bad, but will work for now
-setInterval(_ => {
-    checkForChangesAndInject();
-}, REFRESH_INTERVAL_MS);
+function init() {
+    setInterval(_ => {
+        checkForChangesAndInject();
+    }, REFRESH_INTERVAL_MS);
 
-checkForChangesAndInject();
+    checkForChangesAndInject();
+}
+
+init();

@@ -4,12 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Downloader for Reddit - Options</title>
+    <link rel="stylesheet" href="option-styles.css">
 </head>
 <body>
     <label for="enable-logging-cb">
-        <input type="checkbox" name="enable-logging" id="enable-logging-cb">
         Enable logging
+        <input type="checkbox" name="enable-logging" id="enable-logging-cb">
     </label>
+    <label for="use-custom-server-cb">
+        Use a custom server
+        <input type="checkbox" name="use-custom-server" id="use-custom-server-cb">
+    </label>
+    <label for="custom-server-address-tx">
+        Custom server address
+        <input type="text" name="custom-server-address" id="custom-server-address-tx">
+    </label>
+
+    <div id="button-container">
+        <button id="save-btn">Save</button>
+        <button id="reset-default-btn">Reset to default</button>
+    </div>
+
     <script src="options.js"></script>
 </body>
 </html>

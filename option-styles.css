@@ -1,0 +1,21 @@
+body {
+    padding: 1rem;
+    min-height: 100vh;
+}
+
+label {
+    padding: 0.2rem;
+}
+
+button {
+    width: fit-content;
+}
+
+#button-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    padding: 1rem;
+}
