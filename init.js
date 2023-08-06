@@ -213,7 +213,7 @@ async function getVideoDownloads(data) {
     if (!vidData)
         return downloads;
 
-    const baseMediaUrl = vidData.dash_url.slice(0, -16)
+    const baseMediaUrl = vidData.fallback_url.match(/(https:\/\/v.redd.it\/\w{8,16}\/).+/)[1];
     const getDashUrl = (quality, isAudio = false) => `${baseMediaUrl}DASH_${isAudio ? 'AUDIO_' : ''}${quality}.mp4`;
 
     const qualities = await fetchVideoQualities(vidData.dash_url);
