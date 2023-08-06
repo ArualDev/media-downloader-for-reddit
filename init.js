@@ -145,10 +145,29 @@ class DownloadInfo {
 }
 
 class DownloadInfoVideo extends DownloadInfo {
-    constructor(link, filenamePrefix = "video", quality, fileSize) {
-        super(link, filenamePrefix, quality, fileSize);
+    constructor(videoUrl, audioUrl = null, filenamePrefix = "video", quality, fileSize) {
+        super(null, filenamePrefix, quality, fileSize);
+        this.videoUrl = videoUrl;
+        this.audioUrl = audioUrl;
         this.contentType = "Video";
         this.fileExt = ".mp4";
+    }
+
+    async download(saveAs) {
+        async function getUrl(videoUrl, audioUrl, postUrl) {
+            if (!audioUrl)
+                return videoUrl
+
+            const options = (await browser.storage.sync.get('options'))?.options;
+
+            if (options && options.useCustomServer) {
+                return getCustomServerUrl(videoUrl, audioUrl)
+            }
+            return getRSUrl(postUrl, videoUrl, audioUrl, false);
+        }
+
+        this.link = await getUrl(this.videoUrl, this.audioUrl, this.postUrl);
+        super.download(saveAs);
     }
 }
 
@@ -191,92 +210,49 @@ class DownloadInfoGallery extends DownloadInfo {
 
 async function fetchPostData(postUrl) {
     async function getVideoDownloads(data) {
-        const options = (await browser.storage.sync.get('options'))?.options;
-        const useCustomServer = options && options.useCustomServer;
-
         const downloads = [];
-        const vidData = data.media?.reddit_video;
+
+        const vidData = data.media?.reddit_video ?? data?.preview?.reddit_video_preview;
         if (!vidData)
             return downloads;
 
-        const fallbackUrl = vidData?.fallback_url;
-        const originalQuality = vidData?.height ?? null;
+        const baseMediaUrl = vidData.dash_url.slice(0, -16)
+        const getDashUrl = (quality, isAudio = false) => `${baseMediaUrl}DASH_${isAudio ? 'AUDIO_' : ''}${quality}.mp4`;
 
-        // Check if the video URL matches the standard Reddit video URL pattern
-        const dashRegexStandard = /(https:\/\/v\.redd\.it\/[\w-]+\/DASH_)(\d{3,4})(\.mp4.*)/;
-        const matches = fallbackUrl.match(dashRegexStandard);
+        const qualities = await fetchVideoQualities(vidData.dash_url);
 
-        const qualities = await fetchVideoQualities(vidData.dash_url)
+        let bestAudioUrl = qualities.audio.length > 0
+            ? getDashUrl(qualities.audio[0], true) // URL to best-quality audio file
+            : null;
 
-        const hasAudio = qualities.audio.length > 0;
-        const audioUrl = hasAudio ? `${matches[1]}AUDIO_${qualities.audio[0]}${matches[3]}` : null;
+        const bestAudioFileSize = bestAudioUrl ? await fetchFileSize(bestAudioUrl) : 0;
 
-        const audioFileSize = hasAudio ? await fetchFileSize(audioUrl) : null;
+        // If couldn't properly fetch the audio file, discard audio
+        if (bestAudioFileSize === 0)
+            bestAudioUrl = null;
 
-        const originalVideoFileSize = await fetchFileSize(fallbackUrl);
-
-        const url = useCustomServer
-            ? getCustomServerUrl(fallbackUrl, audioUrl)
-            : getRSUrl(postUrl, fallbackUrl, audioUrl, false);
-
-        // Add the original video link
-        downloads.push(
-            new DownloadInfoVideo(url, data.filenamePrefix, `${originalQuality}p`, originalVideoFileSize + audioFileSize)
-        )
-
-        if (!matches)
-            return downloads;
-
-        // Add alternative resolutions
+        // Add videos with audio to downloads
         for (const quality of qualities.video) {
-            if (quality >= originalQuality)
-                continue;
-            const fallbackUrl = `${matches[1]}${quality}${matches[3]}`;
-            const url = useCustomServer
-                ? getCustomServerUrl(fallbackUrl, audioUrl)
-                : getRSUrl(postUrl, fallbackUrl, audioUrl, false);
-
-            const videoFileSize = await fetchFileSize(fallbackUrl);
+            const videoUrl = getDashUrl(quality);
+            console.log(videoUrl);
+            const videoFileSize = await fetchFileSize(videoUrl);
             if (!videoFileSize)
                 continue;
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${quality}p`, videoFileSize + audioFileSize)
+            const downloadInfo = new DownloadInfoVideo(videoUrl, bestAudioUrl, data.filenamePrefix, `${quality}p`, videoFileSize + bestAudioFileSize);
+            downloadInfo.postUrl = postUrl; // Add postUrl, because rapid... 
             downloads.push(downloadInfo)
         }
 
-        if (hasAudio && audioFileSize) {
-            downloads.push(new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${qualities.audio[0]}Kbps`, audioFileSize));
-        }
-
-        return downloads;
-    }
-
-    async function getGifvDownloads(data) {
-        const downloads = [];
-        const fallbackUrl = data?.preview?.reddit_video_preview?.fallback_url;
-        const originalHeight = data?.preview?.images[0]?.source?.height;
-        const fileSize = await fetchFileSize(fallbackUrl);
-
-        // Add the original video link
-        downloads.push(
-            new DownloadInfoVideo(fallbackUrl, data.filenamePrefix, `${originalHeight}p`, fileSize)
-        )
-
-        // Check if the video URL matches the standard Reddit video URL pattern
-        const dashRegexStandard = /(https:\/\/v\.redd\.it\/[\w-]+\/DASH_)(\d{3,4})(\.mp4.*)/;
-        const matches = fallbackUrl.match(dashRegexStandard);
-        if (matches.length === 0)
-            return downloads;
-
-        // TODO: Make it into its own function. It's basically the same code as in videos
-        // Add alternative resolutions
-        for (const height of REDDIT_VIDEO_HEIGHTS) {
-            if (height >= originalHeight)
+        // Add all audio qualities to downloads
+        for (const quality of qualities.audio) {
+            const audioUrl = getDashUrl(quality, true);
+            const audioFileSize = audioUrl !== bestAudioUrl ? await fetchFileSize(audioUrl) : bestAudioFileSize;
+            if (!audioFileSize)
                 continue;
-            const url = `${matches[1]}${height}${matches[3]}`;
-            const fileSize = await fetchFileSize(url);
-            const downloadInfo = new DownloadInfoVideo(url, data.filenamePrefix, `${height}p`, fileSize)
+            const downloadInfo = new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${quality}Kbps`, audioFileSize + bestAudioFileSize)
             downloads.push(downloadInfo)
         }
+
         return downloads;
     }
 
@@ -319,18 +295,18 @@ async function fetchPostData(postUrl) {
 
                 data.filenamePrefix = nameFromPermalink(data?.permalink);
                 const downloads = [];
-
                 const urlExt = fileExtFromUrl(data.url);
 
-                // TODO: Also, refactor this mess
-                if (data?.is_video)
-                    downloads.push(...(await getVideoDownloads(data)));
+                let method = async () => [];
+
+                if (data?.is_video || data?.preview?.reddit_video_preview?.fallback_url)
+                    method = getVideoDownloads;
                 else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
-                    downloads.push(...(await getImageDownloads(data)));
-                else if (data?.preview?.reddit_video_preview?.fallback_url)
-                    downloads.push(...await getGifvDownloads(data));
+                    method = getImageDownloads;
                 else if (data?.is_gallery)
-                    downloads.push(...await getGalleryDownloads(data));
+                    getGalleryDownloads;
+
+                downloads.push(...await method(data))
 
                 const postData = new PostData(postUrl, data?.title, downloads);
                 resolve(postData);
@@ -582,7 +558,6 @@ function init() {
     setInterval(_ => {
         checkForChangesAndInject();
     }, REFRESH_INTERVAL_MS);
-
     checkForChangesAndInject();
 }
 
