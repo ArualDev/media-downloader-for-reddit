@@ -562,8 +562,3 @@ function init() {
 }
 
 init();
-
-(async () => {
-    const test = (await import(browser.runtime.getURL('test.js'))).test;
-    test();
-  })();
