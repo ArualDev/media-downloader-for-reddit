@@ -2,8 +2,6 @@
 // TODO: Scrap this whole thing and move to TypeScript with a bundler and a front-end framework
 
 const REFRESH_INTERVAL_MS = 500;
-// There can be other resolutions apparently? One video had 220p somehow ¯\_(ツ)_/¯
-const REDDIT_VIDEO_HEIGHTS = [2160, 1440, 1080, 720, 480, 360, 240];
 const REDDIT_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 async function log(msg) {
@@ -564,3 +562,8 @@ function init() {
 }
 
 init();
+
+(async () => {
+    const test = (await import(browser.runtime.getURL('test.js'))).test;
+    test();
+  })();
