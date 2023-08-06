@@ -1,8 +1,8 @@
 const enableLoggingCB = document.querySelector('#enable-logging-cb');
 const useCustomServerCB = document.querySelector('#use-custom-server-cb');
 const customServerAddressTx = document.querySelector('#custom-server-address-tx');
+const optionsFrom = document.querySelector('#options-form');
 
-const saveBtn = document.querySelector('#save-btn');
 const resetDefaultBtn = document.querySelector('#reset-default-btn');
 
 const defaultOptions = {
@@ -46,6 +46,7 @@ function loadOptionsToDom(options) {
     enableLoggingCB.checked = options.enableLogging;
     useCustomServerCB.checked = options.useCustomServer;
     customServerAddressTx.value = options.customServerAddress;
+    updateCustomServerAddressVisibility();
 }
 
 function updateCustomServerAddressVisibility() {
@@ -54,11 +55,11 @@ function updateCustomServerAddressVisibility() {
 
 useCustomServerCB.addEventListener('change', updateCustomServerAddressVisibility)
 
-saveBtn.addEventListener('click', _ => {
+optionsFrom.addEventListener('submit', e => {
+    e.preventDefault();
     saveOptionsFromDom();
 })
 
 resetDefaultBtn.addEventListener('click', _ => {
     loadOptionsToDom(defaultOptions);
-    saveOptionsFromDom();
 })

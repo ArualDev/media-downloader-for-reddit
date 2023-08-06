@@ -1,10 +1,13 @@
 body {
     padding: 1rem;
     min-height: 100vh;
+    background-color: #222;
+    color: #ddd;
 }
 
 label {
     padding: 0.2rem;
+    display: block;
 }
 
 button {
@@ -18,4 +21,8 @@ button {
     position: fixed;
     bottom: 0;
     padding: 1rem;
+}
+
+input:invalid {
+  background-color: lightpink;
 }
