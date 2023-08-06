@@ -203,115 +203,117 @@ class DownloadInfoGallery extends DownloadInfo {
     download(saveAs) {
         const folderName = `${this.folderPrefix}-${getRandomString(6)}`;
         for (const [i, url] of this.urls.entries()) {
-            downloadContent(url, `${folderName}/${this.filenamePrefix}-${i + 1}${fileExtFromUrl(url)}`)
+            downloadContent(url, `${folderName}/${this.filenamePrefix}-${i + 1}${fileExtFromUrl(url)}`, saveAs)
         }
     }
 }
 
-async function fetchPostData(postUrl) {
-    async function getVideoDownloads(data) {
-        const downloads = [];
+async function getVideoDownloads(data) {
+    const downloads = [];
 
-        const vidData = data.media?.reddit_video ?? data?.preview?.reddit_video_preview;
-        if (!vidData)
-            return downloads;
-
-        const baseMediaUrl = vidData.dash_url.slice(0, -16)
-        const getDashUrl = (quality, isAudio = false) => `${baseMediaUrl}DASH_${isAudio ? 'AUDIO_' : ''}${quality}.mp4`;
-
-        const qualities = await fetchVideoQualities(vidData.dash_url);
-
-        let bestAudioUrl = qualities.audio.length > 0
-            ? getDashUrl(qualities.audio[0], true) // URL to best-quality audio file
-            : null;
-
-        const bestAudioFileSize = bestAudioUrl ? await fetchFileSize(bestAudioUrl) : 0;
-
-        // If couldn't properly fetch the audio file, discard audio
-        if (bestAudioFileSize === 0)
-            bestAudioUrl = null;
-
-        // Add videos with audio to downloads
-        for (const quality of qualities.video) {
-            const videoUrl = getDashUrl(quality);
-            console.log(videoUrl);
-            const videoFileSize = await fetchFileSize(videoUrl);
-            if (!videoFileSize)
-                continue;
-            const downloadInfo = new DownloadInfoVideo(videoUrl, bestAudioUrl, data.filenamePrefix, `${quality}p`, videoFileSize + bestAudioFileSize);
-            downloadInfo.postUrl = postUrl; // Add postUrl, because rapid... 
-            downloads.push(downloadInfo)
-        }
-
-        // Add all audio qualities to downloads
-        for (const quality of qualities.audio) {
-            const audioUrl = getDashUrl(quality, true);
-            const audioFileSize = audioUrl !== bestAudioUrl ? await fetchFileSize(audioUrl) : bestAudioFileSize;
-            if (!audioFileSize)
-                continue;
-            const downloadInfo = new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${quality}Kbps`, audioFileSize + bestAudioFileSize)
-            downloads.push(downloadInfo)
-        }
-
+    const vidData = data.media?.reddit_video ?? data?.preview?.reddit_video_preview;
+    if (!vidData)
         return downloads;
+
+    const baseMediaUrl = vidData.dash_url.slice(0, -16)
+    const getDashUrl = (quality, isAudio = false) => `${baseMediaUrl}DASH_${isAudio ? 'AUDIO_' : ''}${quality}.mp4`;
+
+    const qualities = await fetchVideoQualities(vidData.dash_url);
+
+    let bestAudioUrl = qualities.audio.length > 0
+        ? getDashUrl(qualities.audio[0], true) // URL to best-quality audio file
+        : null;
+
+    const bestAudioFileSize = bestAudioUrl ? await fetchFileSize(bestAudioUrl) : 0;
+
+    // If couldn't properly fetch the audio file, discard audio
+    if (bestAudioFileSize === 0)
+        bestAudioUrl = null;
+
+    // Add videos with audio to downloads
+    for (const quality of qualities.video) {
+        const videoUrl = getDashUrl(quality);
+        const videoFileSize = await fetchFileSize(videoUrl);
+        if (!videoFileSize)
+            continue;
+        const downloadInfo = new DownloadInfoVideo(videoUrl, bestAudioUrl, data.filenamePrefix, `${quality}p`, videoFileSize + bestAudioFileSize);
+        downloadInfo.postUrl = permalinkToUrl(data.permalink); // Add postUrl, because rapid... 
+        downloads.push(downloadInfo)
     }
 
-    async function getImageDownloads(data) {
-        const url = data.url;
-        const sourceInfo = data?.preview?.images[0]?.source;
-        const width = sourceInfo?.width;
-        const height = sourceInfo?.height;
-        const fileSize = await fetchFileSize(url);
-        const quality = width && height ? `${width}x${height}` : null
-        return [new DownloadInfoImage(url, data.filenamePrefix, quality, fileSize)];
+    // Add all audio qualities to downloads
+    for (const quality of qualities.audio) {
+        const audioUrl = getDashUrl(quality, true);
+        const audioFileSize = audioUrl !== bestAudioUrl ? await fetchFileSize(audioUrl) : bestAudioFileSize;
+        if (!audioFileSize)
+            continue;
+        const downloadInfo = new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${quality}Kbps`, audioFileSize + bestAudioFileSize)
+        downloads.push(downloadInfo)
     }
 
-    async function getGalleryDownloads(data) {
-        const metadata = data.media_metadata;
-        const urls = [];
+    return downloads;
+}
 
-        // Get the keys in the right order
-        const keys = data.gallery_data.items.map(item => item.media_id);
+async function getImageDownloads(data) {
+    const url = data.url;
+    const sourceInfo = data?.preview?.images[0]?.source;
+    const width = sourceInfo?.width;
+    const height = sourceInfo?.height;
+    const fileSize = await fetchFileSize(url);
+    const quality = width && height ? `${width}x${height}` : null
+    return [new DownloadInfoImage(url, data.filenamePrefix, quality, fileSize)];
+}
 
-        let fileSizeSum = 0;
-        for (const k of keys) {
-            const ext = `.${metadata[k].m.split("/")[1]}`;
-            const url = `https://i.redd.it/${k}${ext}`;
-            fileSizeSum += await fetchFileSize(url);
-            urls.push(url)
-        }
+async function getGalleryDownloads(data) {
+    const metadata = data.media_metadata;
+    const urls = [];
 
-        return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}`, fileSizeSum)];
+    // Get the keys in the right order
+    const keys = data.gallery_data.items.map(item => item.media_id);
+
+    let fileSizeSum = 0;
+    for (const k of keys) {
+        const ext = `.${metadata[k].m.split("/")[1]}`;
+        const url = `https://i.redd.it/${k}${ext}`;
+        fileSizeSum += await fetchFileSize(url);
+        urls.push(url)
     }
 
-    return new Promise(resolve => {
-        fetch(`${postUrl}.json?raw_json=1`)
-            .then(response => response.json())
-            .then(async data => {
-                data = data[0]?.data?.children[0]?.data;
-                const isCrosspost = !!data?.crosspost_parent_list;
-                if (isCrosspost)
-                    data = data.crosspost_parent_list[0]
+    return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}`, fileSizeSum)];
+}
 
-                data.filenamePrefix = nameFromPermalink(data?.permalink);
-                const downloads = [];
-                const urlExt = fileExtFromUrl(data.url);
+async function fetchPostData(postUrl) {
+    try {
+        const response = await fetch(`${postUrl}.json?raw_json=1`);
 
-                let method = async () => [];
+        let data = await response.json();
+        data = data[0]?.data?.children[0]?.data;
 
-                if (data?.is_video || data?.preview?.reddit_video_preview?.fallback_url)
-                    method = getVideoDownloads;
-                else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
-                    method = getImageDownloads;
-                else if (data?.is_gallery)
-                    getGalleryDownloads;
+        // If the post is a crosspost, then set get the data from the original post
+        const isCrosspost = !!data?.crosspost_parent_list;
+        if (isCrosspost)
+            data = data.crosspost_parent_list[0]
 
-                downloads.push(...await method(data))
+        data.filenamePrefix = nameFromPermalink(data?.permalink);
+        const downloads = [];
+        const urlExt = fileExtFromUrl(data.url);
 
-                const postData = new PostData(postUrl, data?.title, downloads);
-                resolve(postData);
-            });
-    })
+        let method = async () => [];
+
+        if (data?.is_video || data?.preview?.reddit_video_preview?.fallback_url)
+            method = getVideoDownloads;
+        else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
+            method = getImageDownloads;
+        else if (data?.is_gallery)
+            method = getGalleryDownloads;
+
+        downloads.push(...await method(data))
+
+        const postData = new PostData(postUrl, data?.title, downloads);
+        return postData;
+    } catch(error) {
+        throw error;
+    }
 }
 
 // TODO: Implement
