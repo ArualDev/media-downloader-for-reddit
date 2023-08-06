@@ -14,6 +14,16 @@ async function log(msg) {
     console.log(`Media Downloader for Reddit v${await getVersion()} - ${msg}`);
 }
 
+function getRandomString(len) {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let res = ""
+    for (let i = 0; i < len; i++) {
+        const index = Math.floor(Math.random() * chars.length);
+        res += chars.charAt(index);
+    }
+    return res
+}
+
 async function getVersion() {
     return await browser.runtime.sendMessage({
         action: "getVersion",
@@ -172,16 +182,6 @@ class DownloadInfoGallery extends DownloadInfo {
     }
 
     download(saveAs) {
-        function getRandomString(len) {
-            const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            let res = ""
-            for (let i = 0; i < len; i++) {
-                const index = Math.floor(Math.random() * chars.length);
-                res += chars.charAt(index);
-            }
-            return res
-        }
-
         const folderName = `${this.folderPrefix}-${getRandomString(6)}`;
         for (const [i, url] of this.urls.entries()) {
             downloadContent(url, `${folderName}/${this.filenamePrefix}-${i + 1}${fileExtFromUrl(url)}`)
@@ -340,6 +340,11 @@ async function fetchPostData(postUrl) {
 
 // TODO: Implement
 function generateBtnElementNewUI() {
+
+}
+
+// TODO: Implement
+function generateBtnElementOldUI() {
 
 }
 
