@@ -1,13 +1,13 @@
 import handleFeed from "./handlers/handleFeed";
 import handlePost from "./handlers/handlePost";
-import { REFRESH_INTERVAL_MS} from "./helpers/constants";
+import { REFRESH_INTERVAL_MS } from "./helpers/constants";
 
 function checkForChangesAndInject() {
     if (window.location.href.includes('/comments/')) {
         handlePost();
-        return;
+    } else {
+        handleFeed();
     }
-    handleFeed();
 }
 
 function init() {
