@@ -9,8 +9,14 @@
             "type": "firefox",
             "request": "launch",
             "reAttach": true,
-            "addonPath": "${workspaceFolder}",
-            "url": "https://www.reddit.com/r/wunkus/"
+            "addonPath": "${workspaceFolder}/dist/",
+            "url": "https://www.reddit.com/r/wunkus/",
+            "pathMappings": [
+                {
+                    "url": "webpack://media-downloader-for-reddit",
+                    "path": "${workspaceFolder}"
+                }
+            ]
         }
     ]
 }
