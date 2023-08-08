@@ -4,7 +4,7 @@ import { DEFAULT_OPTIONS } from "./constants";
 export function sendDownloadRequestToBackground(url, filename, saveAs = false) {
     log(`Download request: \nURL:\t${url}\nFile name:\t${filename}`)
     browser.runtime.sendMessage({
-        action: "download",
+        action: 'download',
         url: url,
         filename: filename,
         saveAs: saveAs
@@ -14,19 +14,19 @@ export function sendDownloadRequestToBackground(url, filename, saveAs = false) {
 
 export async function getVersionFromBackground() {
     return await browser.runtime.sendMessage({
-        action: "getVersion",
+        action: 'getVersion',
     });
 }
 
 
 export function getRandomString(len) {
-    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-    let res = ""
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let res = '';
     for (let i = 0; i < len; i++) {
         const index = Math.floor(Math.random() * chars.length);
         res += chars.charAt(index);
     }
-    return res
+    return res;
 }
 
 
@@ -36,10 +36,10 @@ export function permalinkToUrl(permalink) {
 
 
 export function nameFromPermalink(permalink) {
-    const segments = permalink.split("/");
+    const segments = permalink.split('/');
     if (segments.length < 6)
-        return "";
-    return segments[5]
+        return '';
+    return segments[5];
 }
 
 
