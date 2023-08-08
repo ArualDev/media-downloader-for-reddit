@@ -43,7 +43,10 @@ export default async function getVideoDownloads(data) {
     // Add all audio qualities to downloads
     for (const quality of qualities.audio) {
         const audioUrl = getDashUrl(quality, true);
-        const audioFileSize = audioUrl !== bestAudioUrl ? await fetchFileSize(audioUrl) : bestAudioFileSize;
+        const audioFileSize = audioUrl !== bestAudioUrl // The original audio file size is fetched already
+            ? await fetchFileSize(audioUrl) 
+            : bestAudioFileSize
+
         if (!audioFileSize)
             continue;
         const downloadInfo = new DownloadInfoAudio(audioUrl, data.filenamePrefix, `${quality}Kbps`, audioFileSize + bestAudioFileSize)
