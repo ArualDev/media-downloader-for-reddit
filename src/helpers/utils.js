@@ -1,4 +1,5 @@
 import log from "./log";
+import { DEFAULT_OPTIONS } from "./constants";
 
 export function sendDownloadRequestToBackground(url, filename, saveAs = false) {
     log(`Download request: \nURL:\t${url}\nFile name:\t${filename}`)
@@ -16,6 +17,7 @@ export async function getVersionFromBackground() {
         action: "getVersion",
     });
 }
+
 
 export function getRandomString(len) {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -55,6 +57,7 @@ export function formatFileSize(bytes) {
     return (bytes / 1073741824).toFixed(2) + ' GB';
 }
 
+
 export async function fetchFileSize(url) {
     return fetch(url, { method: 'HEAD' })
         .then(response => {
@@ -63,4 +66,28 @@ export async function fetchFileSize(url) {
             const fileSize = parseInt(response.headers.get('Content-Length'));
             return fileSize;
         })
+}
+
+
+export function setOptionsDefaultsIfUndefined(options) {
+    let modified = false;
+    for (const k in DEFAULT_OPTIONS) {
+        if (!options.hasOwnProperty(k)) {
+            options[k] = DEFAULT_OPTIONS[k]
+            modified = true;
+        }
+    }
+    return modified;
+}
+
+
+export async function loadOptions() {
+    const savedOptions = await browser.storage.sync.get('options');
+    const options = savedOptions.options ?? {};
+
+    const modified = setOptionsDefaultsIfUndefined(options);
+    if (modified) {
+        await browser.storage.sync.set({ options: options })
+    }
+    return options;
 }
