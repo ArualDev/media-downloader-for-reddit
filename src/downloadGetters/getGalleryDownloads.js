@@ -1,4 +1,5 @@
 import { fetchFileSize } from "../helpers/utils";
+import DownloadInfoGallery from "../classes/DownloadInfoGallery";
 
 export default async function getGalleryDownloads(data) {
     const metadata = data.media_metadata;

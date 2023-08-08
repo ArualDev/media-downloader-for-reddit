@@ -1,5 +1,6 @@
 import handlePostNewUI from "./handlePostNewUI";
 import handleInjectButton from "./handleInjectButton";
+import fetchPostData from "../helpers/fetchPostData";
 
 export default function handlePost() {
     const postContent = document.querySelector('[data-test-id="post-content"]');
