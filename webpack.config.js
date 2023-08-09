@@ -1,7 +1,7 @@
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
 
-module.exports = {
+var config = {
     entry: {
         content: './src/content.js',
         options: './src/options.js',
@@ -10,6 +10,7 @@ module.exports = {
     output: {
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
+        clean: true
     },
     module: {
         rules: [
@@ -21,14 +22,21 @@ module.exports = {
     },
     plugins: [
         new CopyPlugin({
-          patterns: [
-            { from: "public", to: "" },
-          ],
+            patterns: [
+                { from: "public", to: "" },
+            ],
         }),
-      ],
+    ],
     optimization: {
         minimize: false,
-    },
-    devtool: 'source-map',
-    watch: true
+    }
+}
+
+module.exports = (env, argv) => {
+    if (argv.mode === 'development') {
+        config.devtool = 'source-map';
+        config.watch = true;
+    }
+
+    return config;
 };
