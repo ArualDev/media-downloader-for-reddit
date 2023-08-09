@@ -6,21 +6,18 @@ export default async function getImageDownloads(data) {
     const getQualityString = (width, height) => `${width}x${height}`;
     const downloads = []
 
-    if(!data?.preview?.images[0])
-        return downloads;
-
     const url = data.url;
-    const sourceInfo = data.preview.images[0].source;
+    const sourceInfo = data?.preview?.images[0]?.source;
 
     const fileSize = await fetchFileSize(url);
 
-    const quality = sourceInfo.width && sourceInfo.height
+    const quality = sourceInfo?.width && sourceInfo?.height
         ? getQualityString(sourceInfo.width, sourceInfo.height)
         : null;
 
     downloads.push(new DownloadInfoImage(url, data.filenamePrefix, quality, fileSize));
 
-    const alternativeQualitiesData = data.preview.images[0].resolutions.reverse();
+    const alternativeQualitiesData = data?.preview?.images[0]?.resolutions?.reverse() ?? [];
     for (const imageInfo of alternativeQualitiesData) {
         const url = imageInfo.url;
         const fileSize = await fetchFileSize(url);
