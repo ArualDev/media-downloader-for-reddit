@@ -1,6 +1,9 @@
 export default async function fetchVideoQualities(playlistUrl) {
-    const vids = [];
-    const audio = [];
+
+    const result = {
+        video: [],
+        audio: []
+    };
 
     try {
         const fetchResult = await fetch(playlistUrl);
@@ -11,27 +14,21 @@ export default async function fetchVideoQualities(playlistUrl) {
 
         for (const match of matches) {
             if (match[1].includes('AUDIO')) {
-                audio.push(
+                result.audio.push(
                     Number(match[1].split('_')[1])
                 );
                 continue;
             }
-            vids.push(
+            result.video.push(
                 Number(match[1])
             );
         }
 
-        vids.sort((a, b) => b - a);
-        audio.sort((a, b) => b - a);
-        
-        return {
-            video: vids,
-            audio: audio
-        };
+        result.video.sort((a, b) => b - a);
+        result.audio.sort((a, b) => b - a);
+
+        return result;
     } catch {
-        return {
-            video: vids,
-            audio: audio
-        };
+        return result;
     }
 }
