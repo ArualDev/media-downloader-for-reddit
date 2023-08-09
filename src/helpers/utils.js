@@ -44,9 +44,9 @@ export function nameFromPermalink(permalink) {
 
 
 export function fileExtFromUrl(url) {
-    const pattern = /\.\w{3,4}($|\?)/;
+    const pattern = /(\.\w{3,4})($|\?)/;
     const matches = url.match(pattern);
-    return matches ? matches[0] : null;
+    return matches ? matches[1] : null;
 }
 
 

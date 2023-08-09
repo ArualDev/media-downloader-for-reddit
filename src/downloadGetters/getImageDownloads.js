@@ -22,6 +22,7 @@ export default async function getImageDownloads(data) {
 
     const alternativeQualitiesData = data.preview.images[0].resolutions.reverse();
     for (const imageInfo of alternativeQualitiesData) {
+        const url = imageInfo.url;
         const fileSize = await fetchFileSize(url);
 
         const quality = imageInfo.width && imageInfo.height
