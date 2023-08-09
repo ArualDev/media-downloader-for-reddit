@@ -1,5 +1,6 @@
 web-ext-artifacts/*
 .web-extension-id
+*.bat
 
 # VSCODE
 
