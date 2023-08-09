@@ -12,7 +12,7 @@ export default async function fetchPostData(postUrl) {
         let data = await response.json();
         data = data[0]?.data?.children[0]?.data;
 
-        // If the post is a crosspost, then set get the data from the original post
+        // If the post is a crosspost, then get the data from the original post
         const isCrosspost = !!data?.crosspost_parent_list;
         if (isCrosspost)
             data = data.crosspost_parent_list[0]
@@ -21,8 +21,8 @@ export default async function fetchPostData(postUrl) {
         const downloads = [];
         const urlExt = fileExtFromUrl(data.url);
 
+        // Set data fetching method depending on post type 
         let method = async () => [];
-
         if (data?.is_video || data?.preview?.reddit_video_preview?.fallback_url)
             method = getVideoDownloads;
         else if (REDDIT_IMAGE_EXTENSIONS.includes(urlExt))
