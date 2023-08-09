@@ -1,6 +1,6 @@
 {
   "name": "media-downloader-for-reddit",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A browser extenison that makes it possible to download videos and GIFs from Reddit with just one click.",
   "scripts": {
     "build": "npx webpack --config webpack.config.js",
