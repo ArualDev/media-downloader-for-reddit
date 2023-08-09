@@ -10,24 +10,35 @@
 
 <body>
     <form id="options-form">
-        <label for="download-path-tx">
-            Download path
-            <input type="text" pattern="(\/[\w\s-]*)+" name="download-path" id="download-path-tx">
-        </label>
-        <label for="use-custom-server-cb">
-            Use a custom server
-            <input type="checkbox" name="use-custom-server" id="use-custom-server-cb">
-        </label>
-        <label for="custom-server-address-tx">
-            Custom server address
-            <input type="text" pattern="https?:\/\/[a-z0-9]+(:\d{1,5})?" name="custom-server-address"
-                id="custom-server-address-tx">
-        </label>
-        <label for="enable-logging-cb">
-            Enable logging
-            <input type="checkbox" name="enable-logging" id="enable-logging-cb">
-        </label>
 
+        <ul>
+            <li>
+                <label for="download-path-tx">
+                    Download path
+                    <input type="text" pattern="(\/[\w\s-]*)+" name="download-path" id="download-path-tx">
+                </label>
+
+            </li>
+            <li>
+                <label for="use-custom-server-cb">
+                    Use a custom server
+                    <input type="checkbox" name="use-custom-server" id="use-custom-server-cb">
+                </label>
+
+                <label class="sub-option" for="custom-server-address-tx">
+                    Custom server address
+                    <input type="text" pattern="https?:\/\/[a-z0-9]+(:\d{1,5})?" name="custom-server-address"
+                        id="custom-server-address-tx">
+                </label>
+            </li>
+            <li>
+                <label for="enable-logging-cb">
+                    Enable logging
+                    <input type="checkbox" name="enable-logging" id="enable-logging-cb">
+                </label>
+            </li>
+        </ul>
+        
         <div id="button-container">
             <input id="reset-default-btn" type="button" value="Load defaults">
             <input id="save-btn" type="submit" value="Save">
