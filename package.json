@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "ArualDev",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "webpack": "^5.88.2",
