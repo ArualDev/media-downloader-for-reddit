@@ -3,7 +3,8 @@
   "version": "1.5.0",
   "description": "A browser extenison that makes it possible to download videos and GIFs from Reddit with just one click.",
   "scripts": {
-    "build": "npx webpack --config webpack.config.js"
+    "build": "npx webpack --config webpack.config.js",
+    "build-dev": "npx webpack --config webpack.config.js --mode=development"
   },
   "keywords": [],
   "author": "ArualDev",
