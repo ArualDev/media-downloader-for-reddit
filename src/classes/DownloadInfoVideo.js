@@ -14,7 +14,7 @@ export default class DownloadInfoVideo extends DownloadInfo {
     async download(saveAs) {
         async function getUrl(info) {
             if (!info.audioUrl)
-                return videoUrl
+                return info.videoUrl
 
             const options = await loadOptions();
 
