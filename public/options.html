@@ -15,9 +15,8 @@
             <li>
                 <label for="download-path-tx">
                     Download path
-                    <input type="text" pattern="(\/[\w\s-]*)+" name="download-path" id="download-path-tx">
+                    <input type="text" pattern="^([\/]{1}[a-z0-9._]+)+(\/?){1}$|^([\/]{1})$" name="download-path" id="download-path-tx">
                 </label>
-
             </li>
             <li>
                 <label for="use-custom-server-cb">
@@ -38,7 +37,7 @@
                 </label>
             </li>
         </ul>
-        
+
         <div id="button-container">
             <input id="reset-default-btn" type="button" value="Load defaults">
             <input id="save-btn" type="submit" value="Save">

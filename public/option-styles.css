@@ -8,6 +8,7 @@ body {
 label {
     padding: 0.4rem;
     display: flex;
+    align-items: center;
     font-size: 1.1em;
 }
 
@@ -73,8 +74,13 @@ input[type=text] {
 
 input:invalid {
   background-color: darkred;
+  border-color: red;
 }
 
 input:focus {
-    outline: none;
+    outline: 1px solid white;
+}
+
+input:invalid:focus {
+      outline: 2px solid red;
 }

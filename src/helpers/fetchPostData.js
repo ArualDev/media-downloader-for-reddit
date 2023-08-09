@@ -1,4 +1,4 @@
-import { nameFromPermalink, fileExtFromUrl } from "./utils";
+import { nameFromPermalink, fileExtFromUrl, loadOptions } from "./utils";
 import PostData from "../classes/PostData"
 import getVideoDownloads from "../downloadGetters/getVideoDownloads";
 import getImageDownloads from "../downloadGetters/getImageDownloads";
@@ -17,7 +17,14 @@ export default async function fetchPostData(postUrl) {
         if (isCrosspost)
             data = data.crosspost_parent_list[0]
 
-        data.filenamePrefix = nameFromPermalink(data?.permalink);
+        // TODO: Implement a proper system for dealing with download file names and paths
+        const options = await loadOptions();
+        const rootFolder = options.downloadPath.startsWith('/')
+            ? options.downloadPath.substring(1)
+            : options.downloadPath
+
+        data.filenamePrefix = rootFolder + nameFromPermalink(data?.permalink);
+
         const downloads = [];
         const urlExt = fileExtFromUrl(data.url);
 

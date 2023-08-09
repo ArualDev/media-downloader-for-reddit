@@ -13,7 +13,7 @@ const resetDefaultBtn = document.querySelector('#reset-default-btn');
 // Read options from DOM and save in browser's storage
 async function saveOptionsFromDom() {
     const options = {
-        downloadPath: downloadPathTx.value,
+        downloadPath: downloadPathTx.value.endsWith('/') ? downloadPathTx.value : downloadPathTx.value + '/',
         enableLogging: enableLoggingCB.checked,
         useCustomServer: useCustomServerCB.checked,
         customServerAddress: customServerAddressTx.value
@@ -36,9 +36,10 @@ function updateCustomServerAddressDisplay() {
 
 useCustomServerCB.addEventListener('change', updateCustomServerAddressDisplay)
 
-optionsFrom.addEventListener('submit', e => {
+optionsFrom.addEventListener('submit', async e => {
     e.preventDefault();
-    saveOptionsFromDom();
+    await saveOptionsFromDom();
+    init();
 })
 
 resetDefaultBtn.addEventListener('click', _ => {

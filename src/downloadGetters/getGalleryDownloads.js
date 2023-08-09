@@ -1,4 +1,4 @@
-import { fetchFileSize } from "../helpers/utils";
+import { fetchFileSize, nameFromPermalink } from "../helpers/utils";
 import DownloadInfoGallery from "../classes/DownloadInfoGallery";
 
 export default async function getGalleryDownloads(data) {
@@ -16,5 +16,5 @@ export default async function getGalleryDownloads(data) {
         urls.push(url)
     }
 
-    return [new DownloadInfoGallery(urls, data.filenamePrefix, `${data.filenamePrefix}`, fileSizeSum)];
+    return [new DownloadInfoGallery(urls, nameFromPermalink(data?.permalink), data.filenamePrefix, fileSizeSum)];
 }
