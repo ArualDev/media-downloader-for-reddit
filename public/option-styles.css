@@ -1,0 +1,86 @@
+body {
+    padding: 1rem;
+    min-height: 100vh;
+    background-color: #222;
+    color: #ddd;
+}
+
+label {
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+}
+
+label.sub-option {
+    padding-left: 3rem;
+}
+
+label input {
+    margin-left: 1.2rem;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-width: 500px;
+    margin: auto;
+}
+
+ul li:nth-child(odd) {
+    background-color: #1d1d1d;
+}
+
+button, input[type=submit], input[type=button]{
+    width: fit-content;
+    min-width: 160px;
+    padding: 0.5rem 1.3rem;
+    background-color: #1d1d1d;
+    border: 1px solid #999;
+    color: #ddd;
+    border-radius: 3px;
+    margin: 6px;
+}
+
+button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background-color: #222;
+    border-color: #fff;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:active, input[type=submit]:active, input[type=button]:active {
+    border-color: #999;
+    color: #999;
+}
+
+#button-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    padding: 1rem;
+}
+
+input[type=text] {
+    color: #ddd;
+    padding: 0.4rem 0.7rem;
+    background-color: #333;
+    border: 1px solid #999;
+    border-radius: 3px;
+}
+
+input:invalid {
+  background-color: darkred;
+  border-color: red;
+}
+
+input:focus {
+    outline: 1px solid white;
+}
+
+input:invalid:focus {
+      outline: 2px solid red;
+}
