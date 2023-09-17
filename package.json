@@ -1,0 +1,31 @@
+{
+  "name": "media-downloader-for-reddit",
+  "type": "module",
+  "version": "2.0.0",
+  "author": {
+    "name": "ArualDev",
+    "url": "https://github.com/ArualDev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArualDev/media-downloader-for-reddit.git"
+  },
+  "license": "GPL-3.0",
+  "scripts": {
+    "build": "bun run scripts/build.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "@types/webextension-polyfill": "^0.10.2",
+    "bun-types": "latest",
+    "chokidar": "^3.5.3",
+    "ts-command-line-args": "^2.5.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "preact": "^10.17.1",
+    "webextension-polyfill": "^0.10.0"
+  }
+}
