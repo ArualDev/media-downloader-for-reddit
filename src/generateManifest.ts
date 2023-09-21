@@ -1,5 +1,6 @@
 import { BrowserTarget, ManifestVersion } from "../constants";
-const packageVersion = require('../package.json').version;
+// const packageVersion = require('../package.json').version;
+const packageVersion = '2.0.0';
 
 const commonAll = {
     name: "Media Downloader for Reddit",
@@ -8,7 +9,7 @@ const commonAll = {
     content_scripts: [
         {
             matches: ["https://*.reddit.com/*"],
-            css: ["content.css"],
+            // css: ["content.css"],
             js: ["content.js"]
         }
     ]
@@ -32,18 +33,23 @@ const commonV3 = {
     host_permissions: [
         "<all_urls>",
     ],
+    // options_ui: {
+    //     page: "options.html",
+    //     open_in_tab: false
+    // },
+    options_page: 'options.html'
 }
 
 const chromeV2 = {
     background: {
-        scripts: ["background-chrome.js"],
+        scripts: ["background.js"],
         persistent: false
     },
 }
 
 const firefoxV2 = {
     background: {
-        scripts: ["background-firefox.js"],
+        scripts: ["background.js"],
         persistent: false
     },
 }
@@ -53,13 +59,13 @@ const chromeV3 = {
         default_title: "Media Downloader for Reddit"
     },
     background: {
-        "service_worker": "background-chrome.js"
+        "service_worker": "background.js"
     },
 }
 
 const firefoxV3 = {
     background: {
-        scripts: ["background-firefox.js"]
+        scripts: ["background.js"]
     },
 }
 
@@ -75,15 +81,15 @@ export default function generateManifest(target: BrowserTarget, manifestVersion:
 
     const output = { ...common, ...browserSpecific }
 
-    if (devMode) {
-        output.content_scripts.push(
-            {
-                matches: ["https://*.reddit.com/*"],
-                css: ["content.css"],
-                js: ["dev/reload-content.js"]
-            }
-        );
-    }
+    // if (devMode) {
+    //     output.content_scripts.push(
+    //         {
+    //             matches: ["https://*.reddit.com/*"],
+    //             css: ["content.css"],
+    //             js: ["reload-content.js"]
+    //         }
+    //     );
+    // }
 
     return JSON.stringify(output, null, 2);
 }

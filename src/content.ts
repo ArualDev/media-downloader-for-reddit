@@ -1,18 +1,13 @@
-/// <reference lib="dom" />
-/// <reference lib="dom.iterable" />
-
-import { JSX, render } from 'preact';
-
 import Browser from 'webextension-polyfill';
-import DownloadButtonOldUI from './components/old-ui/DownloadButton.tsx';
-import DownloadButtonUglyUI from './components/ugly-ui/DownloadButton.tsx';
-import DownloadButtonNewUI from './components/new-ui/DownloadButton.tsx';
-import { UIVersion } from "./constants.ts";
+import { UIVersion } from "./constants";
+import injectDevReload from './dev/injectDevReload';
+import DownloadButtonNewUI from './components/new-ui/DownloadButton.svelte';
+import DownloadButtonUglyUI from './components/ugly-ui/DownloadButton.svelte';
+import DownloadButtonOldUI from './components/old-ui/DownloadButton.svelte';
 
 interface UIHandler {
     detectPosts: () => HTMLElement[];
-    downloadButtonComponent: (props: { btnText: string, onClick: JSX.MouseEventHandler<HTMLElement> }) => JSX.Element;
-    injectDownloadButton: (post: Element, onClick: JSX.MouseEventHandler<HTMLElement>) => void;
+    injectDownloadButton: (post: Element, onClick: (e: MouseEvent) => void) => void;
     upvote: (post: HTMLElement) => void;
 }
 
@@ -22,21 +17,15 @@ class NewUIHandler implements UIHandler {
         return [...posts] as HTMLElement[];
     }
 
-    // getUpvoteButton(post: Element) {
-    //     return post.shadowRoot?.querySelector('button[upvote]') as HTMLElement ?? null;
-    // }
-
-    downloadButtonComponent = DownloadButtonNewUI;
-    injectDownloadButton(post: Element, onClick: JSX.MouseEventHandler<HTMLElement>) {
-        const buttonContainer = post.shadowRoot?.querySelector('shreddit-post-share-button')?.parentElement;
-        const wrapper = document.createElement('div');
-        buttonContainer?.append(wrapper);
-        // const root = createRoot(wrapper)
-        // root.render(DownloadButtonNewUI({
-        //     btnText: 'Download', onClick: onClick
-        // }))
-
-        render(DownloadButtonNewUI({btnText: 'Download', onClick}), wrapper);
+    injectDownloadButton(post: Element, onClick: (e: MouseEvent) => void) {
+        const buttonContainer = post.shadowRoot?.querySelector('shreddit-post-share-button')?.parentElement!;
+        new DownloadButtonNewUI({
+            target: buttonContainer,
+            props: {
+                text: 'Download',
+                onClick: onClick
+            }
+        });
     }
 
     upvote(post: HTMLElement) {
@@ -51,20 +40,15 @@ class OldUIHandler implements UIHandler {
         return [...posts] as HTMLElement[];
     }
 
-    // getUpvoteButton(post: Element) {
-    //     return  as HTMLElement
-    // }
-    downloadButtonComponent = DownloadButtonNewUI;
-    injectDownloadButton(post: Element, onClick: JSX.MouseEventHandler<HTMLElement>) {
-        // const buttonContainer = post.querySelector('.flat-list.buttons');
-        // const wrapper = document.createElement('li');
-        // buttonContainer?.append(wrapper);
-        // const root = createRoot(wrapper)
-        // root.render(new DownloadButtonOldUI({
-        //     btnText: 'download', onClick: onClick
-        // }))
-
-        // root.render(<DownloadButtonOldUI/>)
+    injectDownloadButton(post: Element, onClick: (e: MouseEvent) => void) {
+        const buttonContainer = post.querySelector('.flat-list.buttons')!;
+        new DownloadButtonOldUI({
+            target: buttonContainer,
+            props: {
+                text: 'download',
+                onClick: onClick
+            }
+        })
     }
 
     upvote(post: HTMLElement) {
@@ -82,7 +66,7 @@ class UglyUIHandler implements UIHandler {
             return [];
 
         const posts = [...feedPostContainer.querySelectorAll('.scrollerItem[data-testid="post-container"]')].filter(element => {
-            return element.id.length < 16; // Only select an element if its id is not stupidly long as in ads
+            return element.id.length < 16; // Only select an element if its id is not stupidly long as it is in promoted posts
         });
         return posts as HTMLElement[];
     }
@@ -90,19 +74,15 @@ class UglyUIHandler implements UIHandler {
     getUpvoteButton(post: Element) {
         return post.querySelector('div div button:first-child[aria-pressed="false"]') as HTMLElement
     }
-    downloadButtonComponent = DownloadButtonNewUI;
-    injectDownloadButton(post: Element, onClick: JSX.MouseEventHandler<HTMLElement>) {
-        // const buttonContainer = post.querySelector("._3-miAEojrCvx_4FQ8x3P-s");
-        // const permalink = post.querySelector("a[data-click-id=body]")?.getAttribute("href")
-        // if (!permalink)
-        //     return;
-
-        // const wrapper = document.createElement('div');
-        // buttonContainer?.append(wrapper);
-        // const root = createRoot(wrapper)
-        // root.render(DownloadButtonUglyUI({
-        //     btnText: 'Download', onClick: onClick
-        // }))
+    injectDownloadButton(post: Element, onClick: (e: MouseEvent) => void) {
+        const buttonContainer = post.querySelector("._3-miAEojrCvx_4FQ8x3P-s")!;
+        new DownloadButtonUglyUI({
+            target: buttonContainer,
+            props: {
+                text: 'Download',
+                onClick: onClick
+            }
+        })
     }
 
     upvote(post: HTMLElement) {
@@ -152,14 +132,16 @@ async function detectPosts() {
             continue;
         post.setAttribute('checked', '');
 
-        uiHandler.injectDownloadButton(post, e => {
+        function handleClick(e: MouseEvent) {
             e.preventDefault();
             console.log('download');
             Browser.runtime.sendMessage({
                 action: 'download',
                 url: 'https://preview.redd.it/nqbegxjcgtob1.jpg?width=640&crop=smart&auto=webp&s=c3e2bc51e0d42b38a40f6476ade3ed68c2c4fcfc',
             });
-        });
+        }
+
+        uiHandler.injectDownloadButton(post, handleClick);
     }
 }
 
@@ -168,3 +150,4 @@ setInterval(() => {
 }, 400)
 detectPosts();
 
+injectDevReload();

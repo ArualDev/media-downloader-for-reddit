@@ -1,7 +1,5 @@
 {
   "name": "media-downloader-for-reddit",
-  "type": "module",
-  "version": "2.0.0",
   "author": {
     "name": "ArualDev",
     "url": "https://github.com/ArualDev"
@@ -11,21 +9,31 @@
     "url": "https://github.com/ArualDev/media-downloader-for-reddit.git"
   },
   "license": "GPL-3.0",
+  "version": "2.0.0",
+  "type": "module",
   "scripts": {
-    "build": "bun run scripts/build.ts"
+    "dev": "vite",
+    "build": "bun run scripts/build.ts",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.2",
+    "@tsconfig/svelte": "^5.0.0",
     "@types/chrome": "^0.0.246",
+    "@types/node": "^20.6.3",
     "@types/webextension-polyfill": "^0.10.2",
     "bun-types": "latest",
     "chokidar": "^3.5.3",
-    "ts-command-line-args": "^2.5.1"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+    "svelte": "^4.0.5",
+    "svelte-check": "^3.4.6",
+    "ts-command-line-args": "^2.5.1",
+    "tslib": "^2.6.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-replace": "^0.1.1"
   },
   "dependencies": {
-    "preact": "^10.17.1",
     "webextension-polyfill": "^0.10.0"
   }
 }

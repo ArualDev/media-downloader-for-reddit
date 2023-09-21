@@ -1,0 +1,6 @@
+{
+  "recommendations": [
+    "svelte.svelte-vscode",
+    "firefox-devtools.vscode-firefox-debug"
+  ]
+}

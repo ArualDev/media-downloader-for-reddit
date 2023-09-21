@@ -1,57 +1,71 @@
+import { build } from "vite";
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import fs from 'fs/promises';
 import { BrowserTarget, ManifestVersion } from "../constants";
-import fs from "fs/promises";
 import generateManifest from "../src/generateManifest";
-
-
-function getSuccessEmoji() {
-    const successEmoji = ['😊','👌','🤩','🥳','😺','😽','😎','😁','😀','😌', ':3'];
-    return successEmoji[Math.floor(Math.random() * successEmoji.length)];
-}
+import { emojiStyle, failEmoji, getEmojiFromSet, successEmoji } from "./emojiSets";
 
 export default async function buildExtension(target: BrowserTarget, manifestVersion: ManifestVersion, devMode = false) {
 
-    const distPath = Bun.env.DIST_PATH ? `${Bun.env.DIST_PATH}/${target}-mv${manifestVersion}` : `./dist-${target}`;
-    const tempDistPath = `${distPath}-temp`;
-    const publicPath = './public';
+    const entries = ['./src/content.ts', './src/background.ts', './src/options.ts'];
+    const distPath = `./dist-${target}`;
+    const tempDistPath = `${distPath}`;
 
-    const entrypoints = ['./src/content.ts', `./src/background-${target}.ts`]
-    if (devMode) {
-        entrypoints.push('./src/dev/reload-content.ts')
+    const targetInfoMsg = `target: ${target} - manifest v${manifestVersion} - ${devMode ? 'development' : 'production'}`
+
+    async function buildEntry(entryPath: string, isFirstEntry: boolean) {
+        const res = await build({
+            configFile: false,
+            logLevel: 'silent',
+            plugins: [
+                svelte({
+                    emitCss: false
+                })
+            ],
+            build: {
+                outDir: tempDistPath,
+                rollupOptions: {
+                    input: entryPath,
+                    output: {
+                        entryFileNames: () => '[name].js',
+                        assetFileNames: () => '[name][extname]'
+                    },
+                },
+                // Only the first entry clears the dist dir. Not perfect, but should do
+                emptyOutDir: isFirstEntry,
+                // Only the first entry needs to copy the public dir
+                copyPublicDir: isFirstEntry,
+                minify: false,
+            }
+        })
+        return res;
     }
 
-    const buildResult = await Bun.build({
-        entrypoints: entrypoints,
-        outdir: tempDistPath,
-        sourcemap: devMode ? 'external' : 'none'
-    });
-
-
-    for (const log of buildResult.logs) {
-        console.log(log);
-    }
-
-    if (!buildResult.success){
-        console.error(`Build failed! Target: ${target}\n`, new Error('Error while building in Bun.build'));
-        return;
-    }
-
+    // Building a bundle form every entry separately to avoid Vite's code splitting.
+    // Not a fan of this, but Vite's forced my hand...
     try {
-        // Copy files from public folder into dist
-        await fs.cp(publicPath, tempDistPath, { recursive: true });
-
-        // Add generated manifest.json to dist
-        const manifestStr = generateManifest(BrowserTarget.Chrome, ManifestVersion.V3, devMode);
-        fs.appendFile(`${tempDistPath}/manifest.json`, manifestStr);
+        for (const [index, path] of entries.entries()) {
+            await buildEntry(path, index === 0)
+        }
     } catch (error) {
-        // If the build failed, remove the temp directory
-        await fs.rm(tempDistPath, { recursive: true })
-        console.error(`Build failed! Target: ${target}\n`, error);
+        console.error(
+            error,
+            '\x1b[31m' // print with color red
+            + `build failed ${getEmojiFromSet(failEmoji, emojiStyle.Regular)}`
+            + '\x1b[0m',
+            `${targetInfoMsg}`
+        )
         return;
     }
 
-    // If build was successful, clear the build directory and swap it with the temp directory
-    await fs.rm(distPath, { recursive: true });
-    await fs.rename(tempDistPath, distPath);
+    // Add generated manifest.json to dist
+    const manifestStr = generateManifest(target, manifestVersion, devMode);
+    await fs.appendFile(`${tempDistPath}/manifest.json`, manifestStr);
 
-    console.log(`Build successful ${getSuccessEmoji()}`, `\nTarget: ${target} - manifest V${manifestVersion}`);
+    console.log(
+        '\x1b[32m' // print with color green
+        + `\nbuilt successfully ${getEmojiFromSet(successEmoji, emojiStyle.Regular)}`
+        + '\x1b[0m',
+        `\n${targetInfoMsg}`,
+    );
 }

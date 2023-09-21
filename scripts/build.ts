@@ -17,13 +17,13 @@ const args = parse<buildArguments>({
     dev: {type: Boolean, optional: true, defaultValue: false}
 });
 
-const manifestVersion = (<any>Object).values(ManifestVersion).includes(args.manifest)
-    ? ManifestVersion[args.manifest as 'V2' | 'V3']
-    : null;
+// const manifestVersion = (<any>Object).values(ManifestVersion).includes(args.manifest)
+//     ? ManifestVersion[args.manifest as 'V2' | 'V3']
+//     : null;
 
-const target = (<any>Object).values(BrowserTarget).includes(args.target)
-    ? BrowserTarget[args.target as 'Chrome' | 'Firefox']
-    : null;
+// const target = (<any>Object).values(BrowserTarget).includes(args.target)
+//     ? BrowserTarget[args.target as 'Chrome' | 'Firefox']
+//     : null;
 
 
 async function build() {
@@ -31,8 +31,11 @@ async function build() {
     // await buildExtension(BrowserTarget.Firefox, ManifestVersion.V3)
 }
 
-build();
+await build();
 
 if(args.watch) {
     await watchChanges(build);
+    console.log('\nwatching for changes...')
 }    
+
+
