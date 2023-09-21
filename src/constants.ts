@@ -3,3 +3,5 @@ export const enum UIVersion {
     UglyUI,
     NewUI
 }
+
+// export const extVersion: string = EXT_VERSION;
