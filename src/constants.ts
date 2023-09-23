@@ -1,7 +1,13 @@
+export const redditImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+
 export const enum UIVersion {
     OldUI,
     UglyUI,
     NewUI
 }
 
-// export const extVersion: string = EXT_VERSION;
+export enum DownloadType {
+    Image = 'image',
+    Gallery = 'gallery',
+    Video = 'video'
+}
