@@ -15,7 +15,7 @@ export default function injectDevReload() {
         new ReloadButton({
             target: shadow,
             props: {
-                onCLick: () => {
+                onClick: () => {
                     reload();
                 }
             }
