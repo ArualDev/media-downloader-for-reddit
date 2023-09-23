@@ -1,11 +1,11 @@
 import { BrowserTarget, ManifestVersion } from "../constants";
-// const packageVersion = require('../package.json').version;
-const packageVersion = '2.0.0';
+const packageVersion = require('../package.json').version as string;
 
 const commonAll = {
     name: "Media Downloader for Reddit",
     description: "",
-    version: packageVersion,
+    version: packageVersion.split('-')[0],
+    version_name: packageVersion,
     content_scripts: [
         {
             matches: ["https://*.reddit.com/*"],

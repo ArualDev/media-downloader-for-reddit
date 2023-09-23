@@ -1,7 +1,6 @@
 import { build } from "vite";
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import fs from 'fs/promises';
-import { BrowserTarget, ManifestVersion } from "../constants";
 import generateManifest from "../src/generateManifest";
 import { emojiStyle, failEmoji, getEmojiFromSet, successEmoji } from "./emojiSets";
 import { BrowserTarget, ManifestVersion } from "../constants";
@@ -38,6 +37,7 @@ export default async function buildExtension(target: BrowserTarget, manifestVers
                 // Only the first entry needs to copy the public dir
                 copyPublicDir: isFirstEntry,
                 minify: false,
+                sourcemap: devMode
             }
         })
         return res;

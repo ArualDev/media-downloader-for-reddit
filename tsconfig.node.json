@@ -3,7 +3,8 @@
     "composite": true,
     "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "target": "ES6"
   },
-  // "include": ["vite.config.ts"]
+  "include": ["vite.config.ts"]
 }
