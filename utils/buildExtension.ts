@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import { BrowserTarget, ManifestVersion } from "../constants";
 import generateManifest from "../src/generateManifest";
 import { emojiStyle, failEmoji, getEmojiFromSet, successEmoji } from "./emojiSets";
+import { BrowserTarget, ManifestVersion } from "../constants";
+import { FGColor, consoleColor } from "./console-colors";
 
 export default async function buildExtension(target: BrowserTarget, manifestVersion: ManifestVersion, devMode = false) {
 
@@ -50,9 +52,7 @@ export default async function buildExtension(target: BrowserTarget, manifestVers
     } catch (error) {
         console.error(
             error,
-            '\x1b[31m' // print with color red
-            + `build failed ${getEmojiFromSet(failEmoji, emojiStyle.Regular)}`
-            + '\x1b[0m',
+            consoleColor(`build failed ${getEmojiFromSet(failEmoji, emojiStyle.Regular)}`, FGColor.Red),
             `${targetInfoMsg}`
         )
         return;
@@ -63,9 +63,7 @@ export default async function buildExtension(target: BrowserTarget, manifestVers
     await fs.appendFile(`${tempDistPath}/manifest.json`, manifestStr);
 
     console.log(
-        '\x1b[32m' // print with color green
-        + `\nbuilt successfully ${getEmojiFromSet(successEmoji, emojiStyle.Regular)}`
-        + '\x1b[0m',
-        `\n${targetInfoMsg}`,
+        consoleColor(`\nbuilt successfully ${getEmojiFromSet(successEmoji, emojiStyle.Regular)}`, FGColor.Green),
+        `\n${consoleColor(targetInfoMsg, FGColor.BrightBlack)}\n`,
     );
 }
