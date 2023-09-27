@@ -25,6 +25,7 @@ export default class PostData {
     }
 
     onDownload(data: DownloadData) {
+        // TODO: If an option to upvote posts when downloading set to true, upvote the post
         if(false) {
             this.uiHandler.upvote(this.postElement);
         }
