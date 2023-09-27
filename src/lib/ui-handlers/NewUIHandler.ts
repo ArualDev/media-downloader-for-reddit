@@ -2,15 +2,9 @@ import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type DownloadData from "../../types/DownloadData";
 import type UIHandler from "../../types/UIHandler";
-import { urlFromPermalink } from "../utils";
-
-class TestDownloadData implements DownloadData {
-    url: string;
-    constructor(url: string) {
-        this.url = url;
-    }
-}
-
+import { DownloadDataImage } from "../download-data/DownloadDataImage";
+import { DownloadDataVideo } from "../download-data/DownloadDataVideo";
+import { getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
 
 export default class NewUIHandler implements UIHandler {
 
@@ -19,14 +13,15 @@ export default class NewUIHandler implements UIHandler {
         return [...posts] as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: DownloadData[], onClick: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: DownloadData[], onClick: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
         const buttonContainer = post.shadowRoot?.querySelector('shreddit-post-share-button')?.parentElement!;
         new DownloadButton({
             target: buttonContainer,
             props: {
                 text: 'Download',
                 downloads: downloads,
-                onClick: onClick
+                onClickMain: onClick,
+                onClickMore: onClickMore
             }
         });
     }
@@ -47,30 +42,37 @@ export default class NewUIHandler implements UIHandler {
         if (downloadType === DownloadType.Video) {
             const player = post.querySelector('shreddit-player')
             const packedMediaJSON = player?.getAttribute('packaged-media-json');
-            if (packedMediaJSON) {
-                const data = await JSON.parse(packedMediaJSON);
-                const sourceArray = data?.playbackMp4s?.permutations;
-                for (const source of sourceArray) {
-                    res.push(new TestDownloadData(source.source.url))
-                }
-                res.reverse();
-            }
+            if (!packedMediaJSON)
+                return res;
+            res.push(...await getDownloadsFromPackagedMediaJSON(packedMediaJSON));
         }
 
         if (downloadType === DownloadType.Image) {
             const contentHref = post.getAttribute('content-href');
+
+            const srcset = (post.querySelector('img') as HTMLImageElement)?.srcset;
+            const match = srcset.match(/\s(\d+)w$/);
+            const aspectRatio = Number((post.querySelector('shreddit-aspect-ratio') as HTMLElement)?.style.getPropertyValue('--aspect-ratio'));
+            const width = match ? parseInt(match[1]) : undefined;
+            const height = width ? width * aspectRatio : undefined;
+
             if (contentHref)
-                res.push(new TestDownloadData(contentHref));
+                res.push(new DownloadDataImage(contentHref, width, height));
         }
 
         if (downloadType === DownloadType.Gallery) {
             const imgElements = post.querySelectorAll('li img');
-            for(const imgElement of imgElements) {
+            for (const imgElement of imgElements) {
                 const src = imgElement.getAttribute('src')!;
+
+                // Extract the original image from the .webp path
                 const match = src.match(/-.{2}-(.+)\?/);
-                if(!match)
+                if (!match) {
+                    // If the original image cannot be extracted, use the provided src path
+                    res.push(new DownloadDataImage(src))
                     continue;
-                res.push(new TestDownloadData(`https://i.redd.it/${match[1]}`))
+                }
+                res.push(new DownloadDataImage(`https://i.redd.it/${match[1]}`))
             }
         }
         return res;

@@ -2,19 +2,16 @@ import DownloadButton from "../../components/ugly-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type DownloadData from "../../types/DownloadData";
 import type UIHandler from "../../types/UIHandler";
-import { urlFromPermalink } from "../utils";
-
-class TestDownloadData implements DownloadData {
-    url: string;
-    constructor(url: string) {
-        this.url = url;
-    }
-}
+import { DownloadDataImage } from "../download-data/DownloadDataImage";
+import { DownloadDataVideo } from "../download-data/DownloadDataVideo";
+import { getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
 
 export default class UglyUIHandler implements UIHandler {
     detectPosts() {
-        const feedPostContainer = document.querySelector('.rpBJOHq2PR60pnwJlUyP0')
-            ?? document.querySelector('[data-scroller-first=""]')?.parentNode;
+        if (window.location.href.includes('/comments/'))
+            return [document.querySelector('[data-test-id="post-content"]')!.parentNode as HTMLElement];
+
+        const feedPostContainer = document.querySelector('.rpBJOHq2PR60pnwJlUyP0');
         if (!feedPostContainer)
             return [];
 
@@ -24,16 +21,19 @@ export default class UglyUIHandler implements UIHandler {
         return posts as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: DownloadData[], onClick: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: DownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
         const buttonContainer = post.querySelector("._3-miAEojrCvx_4FQ8x3P-s")!;
         new DownloadButton({
             target: buttonContainer,
             props: {
                 text: 'Download',
                 downloads: downloads,
-                onClick: onClick
+                onClickMain: onClickMain,
+                onClickMore: onClickMore
             }
         })
+
+
     }
 
     upvote(post: HTMLElement) {
@@ -46,32 +46,56 @@ export default class UglyUIHandler implements UIHandler {
         return urlFromPermalink(permalink);
     }
 
-    async getDownloads(post: HTMLElement) {
+    async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
         const res: DownloadData[] = []
 
-        const player = post.querySelector('shreddit-player')
+        if (downloadType === DownloadType.Video) {
+            const player = post.querySelector('shreddit-player')
+            if (!player)
+                return res;
 
-        if (!player)
-            return res;
+            const packedMediaJSON = player.getAttribute('packaged-media-json');
+            if (!packedMediaJSON)
+                return res;
 
-        const packagedJsonInfo = player.getAttribute('packaged-media-json');
-        if (!packagedJsonInfo)
-            return res;
+            res.push(...await getDownloadsFromPackagedMediaJSON(packedMediaJSON));
+        }
 
-        res.push(new TestDownloadData(packagedJsonInfo));
+        if(downloadType === DownloadType.Image) {
+            const img = post.querySelector('img[alt="Post image"]') as HTMLImageElement;           
+
+            const matches = img.src.match(/^https:\/\/(preview)(\.redd\.it\/.*)\?/);
+
+            if(matches && matches.length > 1 && matches[1] === 'preview') {
+
+                const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+                    const img = new Image();
+                    img.addEventListener('load', () => resolve(img));
+                    img.addEventListener('error', (err) => reject(err));
+                    img.src = url;
+                  });
+
+                const url = `https://i${matches[2]}`;
+                const image = await loadImage(url);
+                const width = image.naturalWidth;
+                const height = image.naturalHeight;
+
+                res.push(new DownloadDataImage(url, width, height))
+            } else {
+                res.push(new DownloadDataImage(img.src, img.naturalWidth, img.naturalHeight))
+            }
+        }
+
+
 
         return res;
     }
 
     getPrimaryDownloadType(post: HTMLElement) {
-        const a = post.querySelector('shreddit-player')
-        console.log(a);
-
-        if (a)
-            console.log(post, a.getAttribute('packaged-media-json'));
-
-        if (post.querySelector('div[data-testid="shreddit-player-wrapper"], media-telemetry-observer'))
+        if (post.querySelector('div[data-testid="shreddit-player-wrapper"], media-telemetry-observer')) {
+            console.log(post)
             return DownloadType.Video;
+        }
         if (post.querySelector('ul._1apobczT0TzIKMWpza0OhL'))
             return DownloadType.Gallery;
         if (post.querySelector('img[alt="Post image"]'))
