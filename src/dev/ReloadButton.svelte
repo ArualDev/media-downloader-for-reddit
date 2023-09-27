@@ -14,6 +14,7 @@
     $: {
         if (clicked) {
             button?.classList.add("clicked");
+            
         } else {
             button?.classList.remove("clicked");
         }
@@ -56,22 +57,21 @@
         border-radius: 50%;
         padding: 20px;
         border: none;
-        background-color: #5bcefa;
-        opacity: 0.7;
+        background-color: rgba(94, 206, 250, 0.6);
         margin-top: 10px;
         margin-left: 10px;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(5px);
         transition: opacity 0.2s, scale 0.2s;
     }
 
     button:hover {
-        opacity: 1;
+        background-color: #5bcefa;
         scale: 1.1;
     }
 
     button.clicked {
         animation: rotation 0.7s infinite linear;
-        opacity: 1;
+        background-color: #5bcefa;
         scale: 3;
     }
 
@@ -85,14 +85,13 @@
     }
 
     #mask {
-        background-color: black;
-        opacity: 0.3;
+        background-color: rga(0,0, 0, 0.5);
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         z-index: 998;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(5px);
     }
 </style>
