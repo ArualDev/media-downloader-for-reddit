@@ -11,3 +11,9 @@ export enum DownloadType {
     Gallery = 'gallery',
     Video = 'video'
 }
+
+export enum VideoAudioType {
+    NoAudio,
+    AudioSeparate,
+    AudioPackaged
+}
