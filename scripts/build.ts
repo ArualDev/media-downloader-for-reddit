@@ -1,7 +1,7 @@
 import buildExtension from "../utils/buildExtension";
 import watchChanges from "../utils/watchChanges";
-import {parse} from 'ts-command-line-args';
-import {BrowserTarget, ManifestVersion} from "../constants";
+import { parse } from 'ts-command-line-args';
+import { BrowserTarget, ManifestVersion } from "../constants";
 
 interface buildArguments {
     watch?: boolean,
@@ -11,10 +11,10 @@ interface buildArguments {
 }
 
 const args = parse<buildArguments>({
-    watch: {type: Boolean, optional: true},
-    manifest: {type: String, optional: true},
-    target: {type: String, optional: true},
-    dev: {type: Boolean, optional: true, defaultValue: false}
+    watch: { type: Boolean, optional: true },
+    manifest: { type: String, optional: true },
+    target: { type: String, optional: true },
+    dev: { type: Boolean, optional: true, defaultValue: false }
 });
 
 
@@ -29,8 +29,10 @@ if (args.manifest) {
 async function build() {
     if (manifestVersion)
         await buildExtension(BrowserTarget.Chrome, manifestVersion, args.dev);
-    else
+    else {
         await buildExtension(BrowserTarget.Chrome, ManifestVersion.V3, args.dev);
+        await buildExtension(BrowserTarget.Firefox, ManifestVersion.V3, args.dev)
+    }
 }
 
 (async () => {
