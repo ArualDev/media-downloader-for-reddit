@@ -1,9 +1,11 @@
 import Browser from "webextension-polyfill";
 import type DownloadData from "../../types/DownloadData";
 import { fileExtFromUrl } from "../utils";
+import { fetchFileSizeFromURL, fileExtFromUrl } from "../utils";
 
 export class DownloadDataImage implements DownloadData {
     url: string;
+    private _size: number | null = null;
     extension: string | null;
     dimensions: {
         width?: number,
@@ -33,6 +35,14 @@ export class DownloadDataImage implements DownloadData {
 
     get name() {
         return this.extension === '.gif' ? 'GIF' : 'Image';
+    }
+
+    get fileSize() {
+        return this._size;
+    }
+
+    async fetchFileSize() {
+        this._size = await fetchFileSizeFromURL(this.url);
     }
 
     download() {

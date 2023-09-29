@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { formatFileSize } from "../../lib/utils";
     import type DownloadData from "../../types/DownloadData";
 
     export let downloads: DownloadData[] = [];
@@ -40,7 +41,10 @@
         <ul>
             {#each downloads as download}
                 <li>
-                    <button on:click={() => handleDownloadClick(download)}>Download {download.name} {download.qualityString}</button>
+                    <button on:click={() => handleDownloadClick(download)}>
+                        Download {download.name} {download.qualityString}
+                        {download.fileSize ? formatFileSize(download.fileSize) : '?'}
+                    </button>
                 </li>
             {/each}
         </ul>

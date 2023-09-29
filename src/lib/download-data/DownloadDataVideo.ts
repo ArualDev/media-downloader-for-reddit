@@ -1,8 +1,10 @@
 import Browser from "webextension-polyfill";
 import type DownloadData from "../../types/DownloadData";
+import { fetchFileSizeFromURL } from "../utils";
 
 export class DownloadDataVideo implements DownloadData {
     url: string;
+    private _size: number | null = null;
     dimensions: {
         width?: number,
         height?: number
@@ -28,6 +30,14 @@ export class DownloadDataVideo implements DownloadData {
 
     get name() {
         return 'Video'
+    }
+
+    get fileSize() {
+        return this._size;
+    }
+
+    async fetchFileSize() {
+        this._size = await fetchFileSizeFromURL(this.url);
     }
 
     download() {

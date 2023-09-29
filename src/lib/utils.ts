@@ -1,4 +1,5 @@
-import type DownloadData from "../types/DownloadData";
+import Browser from "webextension-polyfill";
+import type DownloadData from "./download-data/DownloadData";
 import { DownloadDataVideo } from "./download-data/DownloadDataVideo";
 
 export function urlFromPermalink(permalink: string): string {
@@ -30,4 +31,40 @@ export async function getDownloadsFromPackagedMediaJSON(packedMediaJSON: string)
     }
     result.reverse();
     return result;
+}
+
+export async function fetchImageDimensionsFromURL(url: string): Promise<{ width: number | undefined, height: number | undefined }> {
+    const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.addEventListener('load', () => resolve(img));
+        img.addEventListener('error', err => reject(err));
+        img.src = url;
+    });
+
+    try {
+        const img = await loadImage(url);
+        return {
+            width: img.naturalWidth,
+            height: img.naturalHeight
+        }
+    } catch {
+        return {
+            width: undefined,
+            height: undefined
+        }
+    }
+}
+
+export async function fetchFileSizeFromURL(url: string) {
+    return await Browser.runtime.sendMessage({
+        action: 'fetch-file-size',
+        url: url
+    });
+}
+
+export function formatFileSize(bytes: number) {
+    if (bytes < 1024) return bytes + 'B';
+    if (bytes < 1048576) return Math.round((bytes / 1024)) + 'KB';
+    if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + 'MB';
+    return (bytes / 1073741824).toFixed(2) + 'GB';
 }

@@ -51,6 +51,15 @@ async function handlePost(postElement: HTMLElement) {
         }
         downloadScreen.updateDownloads(postData.downloads)
         downloadScreen.toggle();
+
+        for (const download of postData.downloads) {
+            if (download.fileSize)
+                continue;
+            download.fetchFileSize()
+                .then(() => {
+                    downloadScreen.updateDownloads(postData.downloads);
+                });
+        }
     }
 
     uiHandler.injectDownloadButton(postElement, postData.downloads, handleClickMain, handleClickMore);
@@ -63,7 +72,6 @@ async function detectPosts() {
     for (const post of posts) {
         if (post.hasAttribute('mdfr-injected'))
             continue;
-        
         handlePost(post);
     }
 }
