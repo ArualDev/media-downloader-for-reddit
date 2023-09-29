@@ -1,5 +1,5 @@
 import Browser from "webextension-polyfill";
-import type DownloadData from "../../types/DownloadData";
+import type DownloadData from "./DownloadData";
 import { fetchFileSizeFromURL } from "../utils";
 
 export class DownloadDataVideo implements DownloadData {

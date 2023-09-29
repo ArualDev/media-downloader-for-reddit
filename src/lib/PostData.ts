@@ -1,6 +1,6 @@
 import type { DownloadType } from "../constants";
-import type DownloadData from "../types/DownloadData";
-import type UIHandler from "../types/UIHandler"
+import type DownloadData from "./download-data/DownloadData";
+import type UIHandler from "./ui-handling/UIHandler"
 
 export default class PostData {
     postElement: HTMLElement;

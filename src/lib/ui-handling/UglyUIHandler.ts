@@ -1,10 +1,11 @@
+import Browser from "webextension-polyfill";
 import DownloadButton from "../../components/ugly-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
-import type DownloadData from "../../types/DownloadData";
-import type UIHandler from "../../types/UIHandler";
+import type DownloadData from "../download-data/DownloadData";
+import type UIHandler from "./UIHandler";
 import { DownloadDataImage } from "../download-data/DownloadDataImage";
 import { DownloadDataVideo } from "../download-data/DownloadDataVideo";
-import { getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
+import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
 
 export default class UglyUIHandler implements UIHandler {
     detectPosts() {
@@ -31,9 +32,7 @@ export default class UglyUIHandler implements UIHandler {
                 onClickMain: onClickMain,
                 onClickMore: onClickMore
             }
-        })
-
-
+        });
     }
 
     upvote(post: HTMLElement) {
@@ -61,24 +60,27 @@ export default class UglyUIHandler implements UIHandler {
             res.push(...await getDownloadsFromPackagedMediaJSON(packedMediaJSON));
         }
 
-        if(downloadType === DownloadType.Image) {
-            const img = post.querySelector('img[alt="Post image"]') as HTMLImageElement;           
+        if (downloadType === DownloadType.Image) {
+            const img = post.querySelector('img[alt="Post image"]') as HTMLImageElement;
 
             const matches = img.src.match(/^https:\/\/(preview)(\.redd\.it\/.*)\?/);
 
-            if(matches && matches.length > 1 && matches[1] === 'preview') {
+            if (matches && matches.length > 1 && matches[1] === 'preview') {
 
                 const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
                     const img = new Image();
                     img.addEventListener('load', () => resolve(img));
                     img.addEventListener('error', (err) => reject(err));
                     img.src = url;
-                  });
+                });
 
                 const url = `https://i${matches[2]}`;
-                const image = await loadImage(url);
-                const width = image.naturalWidth;
-                const height = image.naturalHeight;
+                // const image = await loadImage(url);
+                // const width = image.naturalWidth;
+                // const height = image.naturalHeight;
+
+                const { width, height } = await fetchImageDimensionsFromURL(url);
+                console.log(height);
 
                 res.push(new DownloadDataImage(url, width, height))
             } else {

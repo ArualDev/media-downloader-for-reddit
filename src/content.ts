@@ -1,19 +1,12 @@
 import Browser from 'webextension-polyfill';
 import injectDevReload from './dev/injectDevReload';
-import OldUIHandler from './lib/ui-handlers/OldUIHandler';
-import UglyUIHandler from './lib/ui-handlers/UglyUIHandler';
-import NewUIHandler from './lib/ui-handlers/NewUIHandler';
-import type UIHandler from './types/UIHandler';
+import OldUIHandler from './lib/ui-handling/OldUIHandler';
+import UglyUIHandler from './lib/ui-handling/UglyUIHandler';
+import NewUIHandler from './lib/ui-handling/NewUIHandler';
+import type UIHandler from './lib/ui-handling/UIHandler';
 import PostData from './lib/PostData';
 import DownloadScreen from './components/common/DownloadScreen.svelte';
-
-function getUIHandler(): UIHandler {
-    if (document.body.classList.contains('v2'))
-        return new NewUIHandler();
-    if (!document.documentElement.classList.contains('theme-beta'))
-        return new OldUIHandler();
-    return new UglyUIHandler();
-}
+import { getUIHandler } from './lib/ui-handling/getUIHandler';
 
 let uiHandler = getUIHandler();
 
