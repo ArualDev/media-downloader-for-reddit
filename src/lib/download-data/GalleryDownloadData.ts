@@ -18,6 +18,11 @@ export class GalleryDownloadData extends BaseDownloadData {
         this.dimensions = this.imageDownloadDatas[0].dimensions;
     }
 
+    get isValid() {
+        const AreAllElementsInvalid = this.imageDownloadDatas.every(data => !data.isValid);
+        return super.isValid && !AreAllElementsInvalid;
+    }
+
     get downloadTypeName() {
         return 'Gallery';
     }

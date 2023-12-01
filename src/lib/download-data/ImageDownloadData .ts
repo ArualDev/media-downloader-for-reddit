@@ -23,7 +23,7 @@ export class ImageDownloadData extends BaseDownloadData {
     }
 
     get isValid() {
-        return this.extension !== null;
+        return super.isValid && this.extension !== null;
     }
 
     get downloadTypeName() {
