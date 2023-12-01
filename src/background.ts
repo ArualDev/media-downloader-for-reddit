@@ -28,5 +28,19 @@ async function handleMessage(message: any, sender: any, sendResponse: any) {
         const fileSize = parseInt(contentLengthStr);
         return fileSize;
     }
+
+    if (message.action === 'fetch-json') {
+        const response = await fetch(message.url)
+        if (!response.ok)
+            return null;
+        try {
+            return response.json();
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+
+    }
+
     return true;
 }
