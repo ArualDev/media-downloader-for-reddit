@@ -3,6 +3,7 @@ import { DownloadType, redditImageExtensions } from "../../constants";
 import type DownloadData from "../download-data/DownloadData";
 import type UIHandler from "./UIHandler";
 import { fileExtFromUrl, urlFromPermalink } from "../utils";
+import type { BaseDownloadable } from "../download-data/BaseDownloadable";
 
 export default class OldUIHandler implements UIHandler {
     detectPosts() {
@@ -10,7 +11,7 @@ export default class OldUIHandler implements UIHandler {
         return [...posts] as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: DownloadData[], onClick: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: BaseDownloadable[], onClick: (e: MouseEvent) => void) {
         const buttonContainer = post.querySelector('.flat-list.buttons')!;
         new DownloadButton({
             target: buttonContainer,

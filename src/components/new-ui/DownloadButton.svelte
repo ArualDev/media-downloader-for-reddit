@@ -1,9 +1,9 @@
 <script lang="ts">
-    import type { BaseDownloadData } from "../../lib/download-data/BaseDownloadData";
+    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadData";
     import DownloadScreen from "../common/DownloadScreen.svelte";
 
     export let text = "";
-    export let downloads: BaseDownloadData[] = [];
+    export let downloads: BaseDownloadable[] = [];
     export let onClickMain: (e: MouseEvent) => void;
     export let onClickMore: (e: MouseEvent) => void;
 

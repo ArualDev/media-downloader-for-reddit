@@ -2,7 +2,7 @@ import Browser from "webextension-polyfill";
 import { fetchFileSizeFromURL } from "../utils";
 import type { MediaDimensions } from "../../types/MediaDimensions";
 
-export abstract class BaseDownloadData {
+export abstract class BaseDownloadable {
 
     url: string | null = null;
     fileSize: number | null = null;
@@ -13,7 +13,7 @@ export abstract class BaseDownloadData {
     };
 
     get isValid() {
-        return this.url !== null;
+        return !(this.fileSizeFetched && !this.fileSize);
     }
 
     get qualityString(): string | null {

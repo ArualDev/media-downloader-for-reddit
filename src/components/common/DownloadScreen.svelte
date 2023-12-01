@@ -1,17 +1,17 @@
 <script lang="ts">
-    import type { BaseDownloadData } from "../../lib/download-data/BaseDownloadData";
+    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadData";
 
     // import type DownloadData from "../../lib/download-data/DownloadData";
     import { formatFileSize } from "../../lib/utils";
 
-    export let downloads: BaseDownloadData[] = [];
+    export let downloads: BaseDownloadable[] = [];
     let active = false;
 
     export function toggle() {
         active = !active;
     }
 
-    export function updateDownloads(newDownloads: BaseDownloadData[]) {
+    export function updateDownloads(newDownloads: BaseDownloadable[]) {
         downloads = newDownloads;
     }
 
@@ -23,7 +23,7 @@
         active = false;
     }
 
-    function handleDownloadClick(download: BaseDownloadData) {
+    function handleDownloadClick(download: BaseDownloadable) {
         download.download();
     }
 

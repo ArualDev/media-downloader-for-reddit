@@ -1,40 +1,39 @@
 import Browser from "webextension-polyfill";
 import type { MediaDimensions } from "../../types/MediaDimensions";
 import { fetchFileSizeFromURL } from "../utils";
-import { BaseDownloadData } from "./BaseDownloadData";
+import { BaseDownloadable } from "./BaseDownloadable";
 
 export type VideoSourceUrls = {
     videoUrl: string,
-    audioIncluded: boolean
-} | {
-    videoUrl: string,
-    audioUrl: string
+    audioUrl?: string,
+    audioIncluded?: boolean
 }
 
-export type VideoDownloadDataProps = {
+export type VideoDownloadableProps = {
     videoSourceUrls: VideoSourceUrls,
-    dimensions?: MediaDimensions
+    dimensions?: MediaDimensions,
+    isAlternative?: boolean,
 };
 
-export class VideoDownloadData extends BaseDownloadData {
+export class VideoDownloadable extends BaseDownloadable {
 
     videoUrl: string;
+    isAlternative: boolean = false;
     audioUrl: string | null = null;
     hasAudio: boolean = false;
 
 
-    constructor(props: VideoDownloadDataProps) {
+    constructor(props: VideoDownloadableProps) {
         super();
         this.videoUrl = props.videoSourceUrls.videoUrl;
-        if ('audioUrl' in props.videoSourceUrls) {
-            this.audioUrl = props.videoSourceUrls.audioUrl;
-            this.hasAudio = true;
-        }
-        if ('audioIncluded' in props.videoSourceUrls) {
-            if (props.videoSourceUrls.audioIncluded)
-                this.hasAudio = true;
-        }
 
+        this.audioUrl = props.videoSourceUrls.audioUrl ?? null;
+        this.hasAudio = true;
+
+        if (props.videoSourceUrls.audioIncluded)
+            this.hasAudio = true;
+
+        this.isAlternative = props.isAlternative ?? false;
         this.dimensions = props.dimensions ?? { width: null, height: null };
     }
 

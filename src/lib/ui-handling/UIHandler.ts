@@ -1,15 +1,16 @@
 import type { DownloadType } from "../../constants";
-import type { BaseDownloadData } from "../download-data/BaseDownloadData";
+import type { BaseDownloadable } from "../download-data/BaseDownloadable";
 
 export default interface UIHandler {
     detectPosts: () => HTMLElement[];
     injectDownloadButton: (
-        post: Element, downloads: BaseDownloadData[],
+        post: Element, downloads: BaseDownloadable[],
         onClick: (e: MouseEvent) => void,
         onClickMore: (e: MouseEvent) => void
     ) => void;
     upvote: (post: HTMLElement) => void;
     getPostURL: (post: HTMLElement) => string;
-    getDownloads: (post: HTMLElement, downloadType?: DownloadType) => Promise<BaseDownloadData[]>;
+    getPostPermalink(post: HTMLElement): string;
+    getDownloads: (post: HTMLElement, downloadType?: DownloadType) => Promise<BaseDownloadable[]>;
     getPrimaryDownloadType: (post: HTMLElement) => DownloadType | null;
 }

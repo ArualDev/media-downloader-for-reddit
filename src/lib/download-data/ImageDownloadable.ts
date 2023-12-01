@@ -1,13 +1,13 @@
 import type { MediaDimensions } from "../../types/MediaDimensions";
 import { fileExtFromUrl } from "../utils";
-import { BaseDownloadData } from "./BaseDownloadData";
+import { BaseDownloadable } from "./BaseDownloadable";
 
 export type ImageDownloadDataProps = {
     url: string,
     dimensions?: MediaDimensions
 };
 
-export class ImageDownloadData extends BaseDownloadData {
+export class ImageDownloadable extends BaseDownloadable {
 
     extension: string | null = null;
     isGIF: boolean = false;

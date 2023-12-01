@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
 import type { MediaDimensions } from "../types/MediaDimensions";
-import type { BaseDownloadData } from "./download-data/BaseDownloadData";
-import { VideoDownloadData } from "./download-data/VideoDownloadData";
+import type { BaseDownloadable } from "./download-data/BaseDownloadable";
+import { VideoDownloadable } from "./download-data/VideoDownloadable";
 
 export function urlFromPermalink(permalink: string): string {
     return `https://reddit.com${permalink}`;
