@@ -1,15 +1,17 @@
 <script lang="ts">
-    import { formatFileSize } from "../../lib/utils";
-    import type DownloadData from "../../types/DownloadData";
+    import type { BaseDownloadData } from "../../lib/download-data/BaseDownloadData";
 
-    export let downloads: DownloadData[] = [];
+    // import type DownloadData from "../../lib/download-data/DownloadData";
+    import { formatFileSize } from "../../lib/utils";
+
+    export let downloads: BaseDownloadData[] = [];
     let active = false;
 
     export function toggle() {
         active = !active;
     }
 
-    export function updateDownloads(newDownloads: DownloadData[]) {
+    export function updateDownloads(newDownloads: BaseDownloadData[]) {
         downloads = newDownloads;
     }
 
@@ -21,7 +23,7 @@
         active = false;
     }
 
-    function handleDownloadClick(download: DownloadData) {
+    function handleDownloadClick(download: BaseDownloadData) {
         download.download();
     }
 
@@ -42,8 +44,11 @@
             {#each downloads as download}
                 <li>
                     <button on:click={() => handleDownloadClick(download)}>
-                        Download {download.name} {download.qualityString}
-                        {download.fileSize ? formatFileSize(download.fileSize) : '?'}
+                        Download {download.downloadTypeName}
+                        {download.qualityString ?? " "}
+                        {download.fileSize
+                            ? formatFileSize(download.fileSize)
+                            : "?"}
                     </button>
                 </li>
             {/each}
@@ -82,5 +87,4 @@
     ul {
         list-style: none;
     }
-
 </style>

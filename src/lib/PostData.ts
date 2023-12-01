@@ -1,12 +1,12 @@
 import type { DownloadType } from "../constants";
-import type DownloadData from "./download-data/DownloadData";
+import type { BaseDownloadData } from "./download-data/BaseDownloadData";
 import type UIHandler from "./ui-handling/UIHandler"
 
 export default class PostData {
     postElement: HTMLElement;
     uiHandler: UIHandler;
     postURL: string;
-    downloads: DownloadData[] = [];
+    downloads: BaseDownloadData[] = [];
     primaryDownloadType: DownloadType | null = null;
 
     constructor(postElement: HTMLElement, uiHandler: UIHandler) {
@@ -24,7 +24,7 @@ export default class PostData {
         return;
     }
 
-    onDownload(data: DownloadData) {
+    onDownload(data: BaseDownloadData) {
         // TODO: If an option to upvote posts when downloading set to true, upvote the post
         if(false) {
             this.uiHandler.upvote(this.postElement);

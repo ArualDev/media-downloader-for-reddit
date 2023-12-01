@@ -1,10 +1,9 @@
 <script lang="ts">
-    import type DownloadData from "../../types/DownloadData";
-    import DownloadOptionsDropdown from "../common/DownloadOptionsDropdown.svelte";
+    import type { BaseDownloadData } from "../../lib/download-data/BaseDownloadData";
     import DownloadScreen from "../common/DownloadScreen.svelte";
 
     export let text = "";
-    export let downloads: DownloadData[] = [];
+    export let downloads: BaseDownloadData[] = [];
     export let onClickMain: (e: MouseEvent) => void;
     export let onClickMore: (e: MouseEvent) => void;
 
@@ -13,14 +12,11 @@
     let dropdownActive = false;
 
     function handleClickMoreBtn(e: MouseEvent) {
-        // downloadScreen.toggle();
         onClickMore(e);
     }
-
 </script>
 
-
-    <button
+<button
     on:click={onClickMain}
     class={"button border-md flex flex-row justify-center items-center h-xl font-semibold relative text-12" +
         " button-secondary inline-flex items-center px-sm hover:text-secondary hover:bg-secondary-background-hover" +
@@ -47,7 +43,8 @@
     </span>
 </button>
 
-<button on:click={handleClickMoreBtn}
+<button
+    on:click={handleClickMoreBtn}
     class={"button border-md flex flex-row justify-center items-center h-xl font-semibold relative text-12" +
         " button-secondary inline-flex items-center px-sm hover:text-secondary hover:bg-secondary-background-hover" +
         " hover:border-secondary-background-hover" +
@@ -61,15 +58,15 @@
         viewBox="0 -960 960 960"
         width="16"
     >
-    <path xmlns="http://www.w3.org/2000/svg" d="M480-336 239-576h482L480-336Z"/>
+        <path
+            xmlns="http://www.w3.org/2000/svg"
+            d="M480-336 239-576h482L480-336Z"
+        />
     </svg>
-
-    
 </button>
 
 <!-- <DownloadOptionsDropdown downloads={downloads} active={dropdownActive}></DownloadOptionsDropdown> -->
-<DownloadScreen bind:this={downloadScreen} downloads={downloads}></DownloadScreen>
-
+<DownloadScreen bind:this={downloadScreen} {downloads}></DownloadScreen>
 
 <style>
     .mdfr-download-main-btn {

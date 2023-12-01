@@ -1,11 +1,11 @@
 import Browser from "webextension-polyfill";
 import DownloadButton from "../../components/ugly-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
-import type DownloadData from "../download-data/DownloadData";
 import type UIHandler from "./UIHandler";
-import { DownloadDataImage } from "../download-data/DownloadDataImage";
-import { DownloadDataVideo } from "../download-data/DownloadDataVideo";
 import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
+import type { BaseDownloadData } from "../download-data/BaseDownloadData";
+import { ImageDownloadData } from "../download-data/ImageDownloadData ";
+import { GalleryDownloadData } from "../download-data/GalleryDownloadData";
 
 export default class UglyUIHandler implements UIHandler {
     detectPosts() {
@@ -22,7 +22,7 @@ export default class UglyUIHandler implements UIHandler {
         return posts as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: DownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: BaseDownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
         const buttonContainer = post.querySelector("._3-miAEojrCvx_4FQ8x3P-s")!;
         new DownloadButton({
             target: buttonContainer,
@@ -46,7 +46,7 @@ export default class UglyUIHandler implements UIHandler {
     }
 
     async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
-        const res: DownloadData[] = []
+        const res: BaseDownloadData[] = []
 
         if (downloadType === DownloadType.Video) {
             const player = post.querySelector('shreddit-player')
@@ -79,15 +79,46 @@ export default class UglyUIHandler implements UIHandler {
                 // const width = image.naturalWidth;
                 // const height = image.naturalHeight;
 
-                const { width, height } = await fetchImageDimensionsFromURL(url);
-                console.log(height);
-
-                res.push(new DownloadDataImage(url, width, height))
+                res.push(new ImageDownloadData({
+                    url: url,
+                    dimensions: await fetchImageDimensionsFromURL(url)
+                }))
             } else {
-                res.push(new DownloadDataImage(img.src, img.naturalWidth, img.naturalHeight))
+                res.push(new ImageDownloadData({
+                    url: img.src,
+                    dimensions: {
+                        width: img.naturalWidth,
+                        height: img.naturalHeight
+                    }
+                }))
             }
         }
 
+        if (downloadType === DownloadType.Gallery) {
+            const imgElements = post.querySelectorAll('ul li figure img');
+            console.log(imgElements);
+
+
+            const imageDownloads: ImageDownloadData[] = [];
+            for (const imgElement of imgElements) {
+                let src = imgElement.getAttribute('src')!;
+
+                // Extract the original image from the .webp path
+                const match = src.match(/-.{2}-(.+)\?/);
+
+                // If the original image cannot be extracted, use the provided src path
+                src = match ? `https://i.redd.it/${match[1]}` : src;
+
+                imageDownloads.push(new ImageDownloadData({
+                    url: src,
+                    dimensions: await fetchImageDimensionsFromURL(src)
+                }))
+            }
+
+            res.push(new GalleryDownloadData({
+                imageDownloadDatas: imageDownloads
+            }));
+        }
 
 
         return res;

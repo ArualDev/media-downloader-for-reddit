@@ -1,6 +1,7 @@
 import Browser from "webextension-polyfill";
-import type DownloadData from "./download-data/DownloadData";
-import { DownloadDataVideo } from "./download-data/DownloadDataVideo";
+import type { MediaDimensions } from "../types/MediaDimensions";
+import type { BaseDownloadData } from "./download-data/BaseDownloadData";
+import { VideoDownloadData } from "./download-data/VideoDownloadData";
 
 export function urlFromPermalink(permalink: string): string {
     return `https://reddit.com${permalink}`;
@@ -23,17 +24,23 @@ export async function getDownloadsFromPackagedMediaJSON(packedMediaJSON: string)
     const data = (await JSON.parse(packedMediaJSON)) as RedditPackagedMediaData;
     const permutations = data?.playbackMp4s?.permutations;
 
-    const result: DownloadData[] = [];
+    const result: BaseDownloadData[] = [];
 
     for (const permutation of permutations) {
         const source = permutation.source;
-        result.push(new DownloadDataVideo(source.url, source.dimensions.width, source.dimensions.height))
+        result.push(new VideoDownloadData({
+            videoSourceUrls: {
+                videoUrl: source.url,
+                audioIncluded: true
+            },
+            dimensions: source.dimensions
+        }))
     }
     result.reverse();
     return result;
 }
 
-export async function fetchImageDimensionsFromURL(url: string): Promise<{ width: number | undefined, height: number | undefined }> {
+export async function fetchImageDimensionsFromURL(url: string): Promise<MediaDimensions> {
     const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new Image();
         img.addEventListener('load', () => resolve(img));
@@ -49,13 +56,13 @@ export async function fetchImageDimensionsFromURL(url: string): Promise<{ width:
         }
     } catch {
         return {
-            width: undefined,
-            height: undefined
+            width: null,
+            height: null
         }
     }
 }
 
-export async function fetchFileSizeFromURL(url: string) {
+export async function fetchFileSizeFromURL(url: string): Promise<number | null> {
     return await Browser.runtime.sendMessage({
         action: 'fetch-file-size',
         url: url

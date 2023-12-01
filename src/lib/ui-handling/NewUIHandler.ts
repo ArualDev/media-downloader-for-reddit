@@ -1,10 +1,11 @@
 import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
-import type DownloadData from "../download-data/DownloadData";
+// import type DownloadData from "../download-data/DownloadData";
 import type UIHandler from "./UIHandler";
-import { DownloadDataImage } from "../download-data/DownloadDataImage";
-import { DownloadDataVideo } from "../download-data/DownloadDataVideo";
 import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, urlFromPermalink } from "../utils";
+import type { BaseDownloadData } from "../download-data/BaseDownloadData";
+import { ImageDownloadData } from "../download-data/ImageDownloadData ";
+import { GalleryDownloadData } from "../download-data/GalleryDownloadData";
 
 export default class NewUIHandler implements UIHandler {
 
@@ -13,7 +14,7 @@ export default class NewUIHandler implements UIHandler {
         return [...posts] as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: DownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: BaseDownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
         const buttonContainer = post.shadowRoot?.querySelector('shreddit-post-share-button')?.parentElement!;
         new DownloadButton({
             target: buttonContainer,
@@ -37,7 +38,7 @@ export default class NewUIHandler implements UIHandler {
     };
 
     async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
-        const res: DownloadData[] = [];
+        const res: BaseDownloadData[] = [];
 
         if (downloadType === DownloadType.Video) {
             const player = post.querySelector('shreddit-player')
@@ -56,27 +57,36 @@ export default class NewUIHandler implements UIHandler {
             // const width = match ? parseInt(match[1]) : undefined;
             // const height = width ? Math.ceil(width * aspectRatio) : undefined; // It is off by one pixel in some cases. Dunno why exactly
 
-
-            const {width, height} = await fetchImageDimensionsFromURL(contentHref!)
-
-            if (contentHref)
-                res.push(new DownloadDataImage(contentHref, width, height));
+            if (contentHref) {
+                res.push(new ImageDownloadData({
+                    url: contentHref,
+                    dimensions: await fetchImageDimensionsFromURL(contentHref!)
+                }));
+            }
         }
 
         if (downloadType === DownloadType.Gallery) {
-            const imgElements = post.querySelectorAll('li img');
+            const imgElements = post.querySelectorAll('ul li a figure img');
+
+            const imageDownloads: ImageDownloadData[] = [];
             for (const imgElement of imgElements) {
-                const src = imgElement.getAttribute('src')!;
+                let src = imgElement.getAttribute('src')!;
 
                 // Extract the original image from the .webp path
                 const match = src.match(/-.{2}-(.+)\?/);
-                if (!match) {
-                    // If the original image cannot be extracted, use the provided src path
-                    res.push(new DownloadDataImage(src))
-                    continue;
-                }
-                res.push(new DownloadDataImage(`https://i.redd.it/${match[1]}`))
+
+                // If the original image cannot be extracted, use the provided src path
+                src = match ? `https://i.redd.it/${match[1]}` : src;
+
+                imageDownloads.push(new ImageDownloadData({
+                    url: src,
+                    dimensions: await fetchImageDimensionsFromURL(src)
+                }))
             }
+
+            res.push(new GalleryDownloadData({
+                imageDownloadDatas: imageDownloads
+            }));
         }
         return res;
     };

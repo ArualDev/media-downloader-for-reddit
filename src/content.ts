@@ -1,9 +1,5 @@
 import Browser from 'webextension-polyfill';
 import injectDevReload from './dev/injectDevReload';
-import OldUIHandler from './lib/ui-handling/OldUIHandler';
-import UglyUIHandler from './lib/ui-handling/UglyUIHandler';
-import NewUIHandler from './lib/ui-handling/NewUIHandler';
-import type UIHandler from './lib/ui-handling/UIHandler';
 import PostData from './lib/PostData';
 import DownloadScreen from './components/common/DownloadScreen.svelte';
 import { getUIHandler } from './lib/ui-handling/getUIHandler';
