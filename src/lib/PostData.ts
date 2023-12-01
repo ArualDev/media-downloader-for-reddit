@@ -1,6 +1,7 @@
 import type { DownloadType } from "../constants";
 import type { BaseDownloadable } from "./download-data/BaseDownloadable";
 import type UIHandler from "./ui-handling/UIHandler"
+import { postUrlFromPermalink } from "./utils";
 
 export default class PostData {
     postElement: HTMLElement;
@@ -13,12 +14,13 @@ export default class PostData {
     constructor(postElement: HTMLElement, uiHandler: UIHandler) {
         this.postElement = postElement;
         this.uiHandler = uiHandler;
-        this.postURL = uiHandler.getPostURL(this.postElement);
+        this.permalink = uiHandler.getPostPermalink(this.postElement);
+        this.postURL = postUrlFromPermalink(this.permalink);
         this.primaryDownloadType = uiHandler.getPrimaryDownloadType(this.postElement);
     }
 
     async getDownloadsFromUI() {
-        if(!this.primaryDownloadType)
+        if (!this.primaryDownloadType)
             return;
         const downloads = await this.uiHandler.getDownloads(this.postElement, this.primaryDownloadType);
         this.downloads.push(...downloads);
@@ -27,7 +29,7 @@ export default class PostData {
 
     onDownload(data: BaseDownloadable) {
         // TODO: If an option to upvote posts when downloading set to true, upvote the post
-        if(false) {
+        if (false) {
             this.uiHandler.upvote(this.postElement);
         }
     }

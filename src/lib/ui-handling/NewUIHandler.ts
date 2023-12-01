@@ -1,6 +1,5 @@
 import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
-// import type DownloadData from "../download-data/DownloadData";
 import type UIHandler from "./UIHandler";
 import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, postUrlFromPermalink } from "../utils";
 import type { BaseDownloadable } from "../download-data/BaseDownloadable";
@@ -33,9 +32,14 @@ export default class NewUIHandler implements UIHandler {
     }
 
     getPostURL(post: HTMLElement) {
-        const permalink = post.getAttribute('permalink')!;
-        return urlFromPermalink(permalink);
+        const permalink = this.getPostPermalink(post);
+        return postUrlFromPermalink(permalink);
     };
+
+    getPostPermalink(post: HTMLElement) {
+        const permalink = post.getAttribute('permalink')!;
+        return permalink;
+    }
 
     async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
         const res: BaseDownloadable[] = [];

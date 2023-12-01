@@ -1,8 +1,7 @@
 import DownloadButton from "../../components/old-ui/DownloadButton.svelte";
 import { DownloadType, redditImageExtensions } from "../../constants";
-import type DownloadData from "../download-data/DownloadData";
 import type UIHandler from "./UIHandler";
-import { fileExtFromUrl, urlFromPermalink } from "../utils";
+import { fileExtFromUrl, postUrlFromPermalink } from "../utils";
 import type { BaseDownloadable } from "../download-data/BaseDownloadable";
 
 export default class OldUIHandler implements UIHandler {
@@ -29,25 +28,29 @@ export default class OldUIHandler implements UIHandler {
     }
 
     getPostURL(post: HTMLElement) {
-        const permalink = post.getAttribute('data-permalink')!;
-        return urlFromPermalink(permalink);
+        const permalink = this.getPostPermalink(post);
+        return postUrlFromPermalink(permalink);
     };
 
-    async getDownloads (post: HTMLElement) {
+    getPostPermalink(post: HTMLElement): string {
+        return post.getAttribute('data-permalink')!;
+    }
+
+    async getDownloads(post: HTMLElement) {
         return [];
     };
 
-    getPrimaryDownloadType (post: HTMLElement) {     
-        if(post.getAttribute('data-is-gallery') === 'true')
-            return DownloadType.Gallery; 
+    getPrimaryDownloadType(post: HTMLElement) {
+        if (post.getAttribute('data-is-gallery') === 'true')
+            return DownloadType.Gallery;
 
-        if(post.getAttribute('data-kind') === 'video')
+        if (post.getAttribute('data-kind') === 'video')
             return DownloadType.Video;
 
         const ext = fileExtFromUrl(post.getAttribute('data-url')!)
-        if(ext && redditImageExtensions.includes(ext))
+        if (ext && redditImageExtensions.includes(ext))
             return DownloadType.Image;
-        
+
         return null;
-    };  
+    };
 }

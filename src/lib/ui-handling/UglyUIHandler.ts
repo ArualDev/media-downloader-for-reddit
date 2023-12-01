@@ -22,7 +22,7 @@ export default class UglyUIHandler implements UIHandler {
         return posts as HTMLElement[];
     }
 
-    injectDownloadButton(post: Element, downloads: BaseDownloadData[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
+    injectDownloadButton(post: Element, downloads: BaseDownloadable[], onClickMain: (e: MouseEvent) => void, onClickMore: (e: MouseEvent) => void) {
         const buttonContainer = post.querySelector("._3-miAEojrCvx_4FQ8x3P-s")!;
         new DownloadButton({
             target: buttonContainer,
@@ -41,8 +41,12 @@ export default class UglyUIHandler implements UIHandler {
     }
 
     getPostURL(post: HTMLElement) {
-        const permalink = post.querySelector("a[data-click-id=body]")?.getAttribute("href")!;
-        return urlFromPermalink(permalink);
+        const permalink = this.getPostPermalink(post);
+        return postUrlFromPermalink(permalink);
+    }
+
+    getPostPermalink(post: HTMLElement): string {
+        return post.querySelector("a[data-click-id=body]")?.getAttribute("href")!;
     }
 
     async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
