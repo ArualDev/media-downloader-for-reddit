@@ -39,8 +39,20 @@ async function handleMessage(message: any, sender: any, sendResponse: any) {
             console.error(error);
             return null;
         }
-
     }
+
+    if (message.action === 'fetch-text') {
+        const response = await fetch(message.url)
+        if (!response.ok)
+            return null;
+        try {
+            return response.text();
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
 
     return true;
 }

@@ -2,8 +2,9 @@ import Browser from "webextension-polyfill";
 import type { MediaDimensions } from "../types/MediaDimensions";
 import type { BaseDownloadable } from "./download-data/BaseDownloadable";
 import { VideoDownloadable } from "./download-data/VideoDownloadable";
+import type { RedditPostContentAPIData } from "../types/RedditPostContentAPIData";
 
-export function urlFromPermalink(permalink: string): string {
+export function postUrlFromPermalink(permalink: string): string {
     return `https://reddit.com${permalink}`;
 }
 
@@ -24,11 +25,11 @@ export async function getDownloadsFromPackagedMediaJSON(packedMediaJSON: string)
     const data = (await JSON.parse(packedMediaJSON)) as RedditPackagedMediaData;
     const permutations = data?.playbackMp4s?.permutations;
 
-    const result: BaseDownloadData[] = [];
+    const result: BaseDownloadable[] = [];
 
     for (const permutation of permutations) {
         const source = permutation.source;
-        result.push(new VideoDownloadData({
+        result.push(new VideoDownloadable({
             videoSourceUrls: {
                 videoUrl: source.url,
                 audioIncluded: true
@@ -67,6 +68,56 @@ export async function fetchFileSizeFromURL(url: string): Promise<number | null> 
         action: 'fetch-file-size',
         url: url
     });
+}
+
+export async function fetchPostDataFromAPI(postUrl: string): Promise<RedditPostContentAPIData> {
+    const responseObject = await Browser.runtime.sendMessage({
+        action: 'fetch-json',
+        url: postUrl
+    });
+    return (responseObject[0]?.data?.children[0]?.data as RedditPostContentAPIData);
+}
+
+export type VideoQualities = {
+    video: number[],
+    audio: number[]
+};
+
+export async function fetchVideoQualities(playlistUrl: string) {
+
+    const result: VideoQualities = {
+        video: [],
+        audio: []
+    };
+
+    try {
+        const playlistContent = await Browser.runtime.sendMessage({
+            action: 'fetch-text',
+            url: playlistUrl
+        });
+
+        const pattern = /<BaseURL>DASH_(\w+).mp4<\/BaseURL>/g;
+        const matches = playlistContent.matchAll(pattern);
+
+        for (const match of matches) {
+            if (match[1].includes('AUDIO')) {
+                result.audio.push(
+                    Number(match[1].split('_')[1])
+                );
+                continue;
+            }
+            result.video.push(
+                Number(match[1])
+            );
+        }
+
+        result.video.sort((a, b) => b - a);
+        result.audio.sort((a, b) => b - a);
+
+        return result;
+    } catch {
+        return result;
+    }
 }
 
 export function formatFileSize(bytes: number) {
