@@ -37,7 +37,7 @@ export default async function buildExtension(target: BrowserTarget, manifestVers
                 // Only the first entry needs to copy the public dir
                 copyPublicDir: isFirstEntry,
                 minify: false,
-                sourcemap: devMode
+                sourcemap: devMode ? "inline" : false
             }
         })
         return res;
