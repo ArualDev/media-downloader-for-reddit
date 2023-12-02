@@ -4,7 +4,7 @@ import getImageDownloadablesFromApiData from "./api-handling/getImageDownloadabl
 import getGalleryDownloadablesFromApiData from "./api-handling/getGalleryDownloadablesFromApiData";
 import getVideoDownloadablesFromApiData from "./api-handling/getVideoDownloadablesFromApiData";
 import type UIHandler from "./ui-handling/UIHandler"
-import { fetchPostContentFromAPI, postUrlFromPermalink } from "./utils";
+import { fetchPostContentFromApi, postUrlFromPermalink } from "./utils";
 
 export default class PostData {
     postElement: HTMLElement;
@@ -39,7 +39,7 @@ export default class PostData {
 
     async fetchDownloadsFromAPI() {
 
-        const data = await fetchPostContentFromAPI(this.postURL + '.json?raw_json=1');
+        const data = await fetchPostContentFromApi(this.postURL + '.json?raw_json=1');
 
         if (this.primaryDownloadType === DownloadType.Image) {
             this.downloads.push(...await getImageDownloadables(data));
