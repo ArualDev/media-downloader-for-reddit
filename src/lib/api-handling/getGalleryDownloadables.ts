@@ -1,6 +1,6 @@
 import type { RedditPostContentAPIData } from "../../types/RedditPostContentAPIData";
-import { GalleryDownloadable } from "../download-data/GalleryDownloadable";
-import { ImageDownloadable } from "../download-data/ImageDownloadable";
+import { ImageDownloadable } from "../downloadable/ImageDownloadable";
+import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
 
 
 export default async function getGalleryDownloadables(postAPIData: RedditPostContentAPIData) {

@@ -1,6 +1,6 @@
 import type { MediaDimensions } from "../../types/MediaDimensions";
 import type { RedditPostContentAPIData } from "../../types/RedditPostContentAPIData";
-import { ImageDownloadable } from "../download-data/ImageDownloadable";
+import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 
 export default async function getImageDownloadables(postAPIData: RedditPostContentAPIData) {
     const downloads = []

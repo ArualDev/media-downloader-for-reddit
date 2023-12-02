@@ -2,9 +2,9 @@ import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type UIHandler from "./UIHandler";
 import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, postUrlFromPermalink } from "../utils";
-import type { BaseDownloadable } from "../download-data/BaseDownloadable";
-import { ImageDownloadable } from "../download-data/ImageDownloadable";
-import { GalleryDownloadable } from "../download-data/GalleryDownloadable";
+import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
+import { ImageDownloadable } from "../downloadable/ImageDownloadable";
+import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
 
 export default class NewUIHandler implements UIHandler {
 

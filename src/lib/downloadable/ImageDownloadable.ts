@@ -2,7 +2,7 @@ import type { MediaDimensions } from "../../types/MediaDimensions";
 import { fileExtFromUrl } from "../utils";
 import { BaseDownloadable } from "./BaseDownloadable";
 
-export type ImageDownloadDataProps = {
+export type ImageDownloadableProps = {
     url: string,
     dimensions?: MediaDimensions
 };
@@ -12,7 +12,7 @@ export class ImageDownloadable extends BaseDownloadable {
     extension: string | null = null;
     isGIF: boolean = false;
 
-    constructor(props: ImageDownloadDataProps) {
+    constructor(props: ImageDownloadableProps) {
         super();
         this.url = props.url;
         this.extension = fileExtFromUrl(this.url);

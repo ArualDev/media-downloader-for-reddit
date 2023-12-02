@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadData";
+    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadable";
 
     // import type DownloadData from "../../lib/download-data/DownloadData";
     import { formatFileSize } from "../../lib/utils";

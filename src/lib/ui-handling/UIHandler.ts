@@ -1,5 +1,5 @@
 import type { DownloadType } from "../../constants";
-import type { BaseDownloadable } from "../download-data/BaseDownloadable";
+import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 
 export default interface UIHandler {
     detectPosts: () => HTMLElement[];

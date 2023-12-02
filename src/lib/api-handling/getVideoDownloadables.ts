@@ -1,7 +1,7 @@
 import type { RedditPostContentAPIData } from "../../types/RedditPostContentAPIData";
-import { AudioDownloadable } from "../download-data/AudioDownloadable";
-import type { BaseDownloadable } from "../download-data/BaseDownloadable";
-import { VideoDownloadable } from "../download-data/VideoDownloadable";
+import { AudioDownloadable } from "../downloadable/AudioDownloadable";
+import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
+import { VideoDownloadable } from "../downloadable/VideoDownloadable";
 import { fetchVideoQualities } from "../utils";
 
 export default async function getVideoDownloadables(postAPIData: RedditPostContentAPIData) {

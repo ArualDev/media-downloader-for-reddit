@@ -2,7 +2,7 @@ import DownloadButton from "../../components/old-ui/DownloadButton.svelte";
 import { DownloadType, redditImageExtensions } from "../../constants";
 import type UIHandler from "./UIHandler";
 import { fileExtFromUrl, postUrlFromPermalink } from "../utils";
-import type { BaseDownloadable } from "../download-data/BaseDownloadable";
+import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 
 export default class OldUIHandler implements UIHandler {
     detectPosts() {

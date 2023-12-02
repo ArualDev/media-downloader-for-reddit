@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadData";
+    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadable";
     import DownloadScreen from "../common/DownloadScreen.svelte";
 
     export let text = "";
