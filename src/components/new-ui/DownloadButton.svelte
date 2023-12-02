@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { BaseDownloadable } from "../../lib/download-data/BaseDownloadable";
+    import type { BaseDownloadable } from "../../lib/downloadable/BaseDownloadable";
     import DownloadScreen from "../common/DownloadScreen.svelte";
 
     export let text = "";
@@ -66,7 +66,7 @@
 </button>
 
 <!-- <DownloadOptionsDropdown downloads={downloads} active={dropdownActive}></DownloadOptionsDropdown> -->
-<DownloadScreen bind:this={downloadScreen} {downloads}></DownloadScreen>
+<!-- <DownloadScreen bind:this={downloadScreen} {downloads}></DownloadScreen> -->
 
 <style>
     .mdfr-download-main-btn {
