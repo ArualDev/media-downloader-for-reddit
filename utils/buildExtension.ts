@@ -58,9 +58,15 @@ export default async function buildExtension(target: BrowserTarget, manifestVers
         return;
     }
 
-    // Add generated manifest.json to dist
+    const manifestFilePath = `${tempDistPath}/manifest.json`;
+    // If manifest file exists, remove it
+    if (await fs.exists(manifestFilePath))
+        await fs.rm(manifestFilePath);
+
     const manifestStr = generateManifest(target, manifestVersion, devMode);
-    await fs.appendFile(`${tempDistPath}/manifest.json`, manifestStr);
+
+    // Add generated manifest.json to dist
+    await fs.appendFile(manifestFilePath, manifestStr);
 
     console.log(
         consoleColor(`\nbuilt successfully ${getEmojiFromSet(successEmoji, emojiStyle.Regular)}`, FGColor.Green),
