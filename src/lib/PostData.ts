@@ -25,30 +25,35 @@ export default class PostData {
     async getDownloadsFromUI() {
         if (!this.primaryDownloadType)
             return;
-        const downloads = await this.uiHandler.getDownloads(this.postElement, this.primaryDownloadType);
-        this.downloads.push(...downloads);
-        return;
+
+        const uiGetterFunctions = {
+            [DownloadType.Image]: this.uiHandler.getImageDownloadables,
+            [DownloadType.Video]: this.uiHandler.getVideoDownloadables,
+            [DownloadType.Gallery]: this.uiHandler.getGalleryDownloadables,
+        };
+
+        this.downloads.push(...await uiGetterFunctions[this.primaryDownloadType](this.postElement));
+    }
+
+    async fetchDownloadsFromAPI() {
+        if (!this.primaryDownloadType)
+            return;
+
+        const data = await fetchPostContentFromApi(this.postURL + '.json?raw_json=1');
+
+        const ApiGetterFunctions = {
+            [DownloadType.Image]: getImageDownloadablesFromApiData,
+            [DownloadType.Video]: getVideoDownloadablesFromApiData,
+            [DownloadType.Gallery]: getGalleryDownloadablesFromApiData,
+        };
+
+        this.downloads.push(...await ApiGetterFunctions[this.primaryDownloadType](data));
     }
 
     onDownload(data: BaseDownloadable) {
         // TODO: If an option to upvote posts when downloading set to true, upvote the post
         if (false) {
             this.uiHandler.upvote(this.postElement);
-        }
-    }
-
-    async fetchDownloadsFromAPI() {
-
-        const data = await fetchPostContentFromApi(this.postURL + '.json?raw_json=1');
-
-        if (this.primaryDownloadType === DownloadType.Image) {
-            this.downloads.push(...await getImageDownloadables(data));
-        }
-        if (this.primaryDownloadType === DownloadType.Video) {
-            this.downloads.push(...await getVideoDownloadables(data));
-        }
-        if (this.primaryDownloadType === DownloadType.Gallery) {
-            this.downloads.push(...await getGalleryDownloadables(data));
         }
     }
 
