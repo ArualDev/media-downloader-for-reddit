@@ -1,7 +1,10 @@
-import type { DownloadType } from "../constants";
-import type { BaseDownloadable } from "./download-data/BaseDownloadable";
+import { DownloadType } from "../constants";
+import type { BaseDownloadable } from "./downloadable/BaseDownloadable";
+import getImageDownloadables from "./api-handling/getImageDownloadables";
+import getGalleryDownloadables from "./api-handling/getGalleryDownloadables";
+import getVideoDownloadables from "./api-handling/getVideoDownloadables";
 import type UIHandler from "./ui-handling/UIHandler"
-import { postUrlFromPermalink } from "./utils";
+import { fetchPostContentFromAPI, postUrlFromPermalink } from "./utils";
 
 export default class PostData {
     postElement: HTMLElement;
@@ -35,7 +38,18 @@ export default class PostData {
     }
 
     async fetchDownloadsFromAPI() {
-        this.downloads.push();
+
+        const data = await fetchPostContentFromAPI(this.postURL + '.json?raw_json=1');
+
+        if (this.primaryDownloadType === DownloadType.Image) {
+            this.downloads.push(...await getImageDownloadables(data));
+        }
+        if (this.primaryDownloadType === DownloadType.Video) {
+            this.downloads.push(...await getVideoDownloadables(data));
+        }
+        if (this.primaryDownloadType === DownloadType.Gallery) {
+            this.downloads.push(...await getGalleryDownloadables(data));
+        }
     }
 
 }
