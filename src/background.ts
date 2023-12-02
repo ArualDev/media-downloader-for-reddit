@@ -3,6 +3,8 @@ import Browser from "webextension-polyfill";
 Browser.runtime.onMessage.addListener(handleMessage);
 async function handleMessage(message: any, sender: any, sendResponse: any) {
     if (message.action === 'download') {
+        console.log(`Downloading ${message.url}`);
+
         Browser.downloads.download({
             url: message.url
         });
