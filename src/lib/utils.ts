@@ -3,6 +3,7 @@ import type { MediaDimensions } from "../types/MediaDimensions";
 import type { BaseDownloadable } from "./downloadable/BaseDownloadable";
 import { VideoDownloadable } from "./downloadable/VideoDownloadable";
 import type { RedditPostContentAPIData } from "../types/RedditPostContentAPIData";
+import { DownloadType } from "../constants";
 
 export function postUrlFromPermalink(permalink: string): string {
     return `https://reddit.com${permalink}`;
@@ -61,6 +62,18 @@ export async function fetchImageDimensionsFromURL(url: string): Promise<MediaDim
             height: null
         }
     }
+}
+
+export function getOriginalImageFileNameFromUrl(url: string) {
+    const pattern = /[a-z1-9]{8,16}\.[a-z1-9]{2,4}/;
+    const match = url.match(pattern);
+    return match ? match[0] : null;
+}
+
+export function tryExtractRedditMediaUrl(url: string, mediaType: DownloadType.Image | DownloadType.Video) {
+    const originalFilename = getOriginalImageFileNameFromUrl(url);
+    const domainPrefix = mediaType === DownloadType.Image ? 'i' : 'v';
+    return originalFilename ? `https://${domainPrefix}.redd.it/${originalFilename}` : url;
 }
 
 export async function fetchFileSizeFromURL(url: string): Promise<number | null> {
