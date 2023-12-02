@@ -3,7 +3,7 @@ import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
 
 
-export default async function getGalleryDownloadables(postAPIData: RedditPostContentAPIData) {
+export default async function getGalleryDownloadablesFromApiData(postAPIData: RedditPostContentAPIData) {
     const metadata = postAPIData.media_metadata;
     const imageDownloads: ImageDownloadable[] = [];
 
@@ -24,5 +24,5 @@ export default async function getGalleryDownloadables(postAPIData: RedditPostCon
 
     return [new GalleryDownloadable({
         imageDownloadables: imageDownloads
-    })]
+    })];
 }

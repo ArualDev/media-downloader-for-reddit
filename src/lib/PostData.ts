@@ -1,8 +1,8 @@
 import { DownloadType } from "../constants";
 import type { BaseDownloadable } from "./downloadable/BaseDownloadable";
-import getImageDownloadables from "./api-handling/getImageDownloadables";
-import getGalleryDownloadables from "./api-handling/getGalleryDownloadables";
-import getVideoDownloadables from "./api-handling/getVideoDownloadables";
+import getImageDownloadablesFromApiData from "./api-handling/getImageDownloadablesFromApiData";
+import getGalleryDownloadablesFromApiData from "./api-handling/getGalleryDownloadablesFromApiData";
+import getVideoDownloadablesFromApiData from "./api-handling/getVideoDownloadablesFromApiData";
 import type UIHandler from "./ui-handling/UIHandler"
 import { fetchPostContentFromAPI, postUrlFromPermalink } from "./utils";
 

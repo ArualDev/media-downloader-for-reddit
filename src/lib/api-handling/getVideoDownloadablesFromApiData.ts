@@ -4,7 +4,7 @@ import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 import { VideoDownloadable } from "../downloadable/VideoDownloadable";
 import { fetchVideoQualities } from "../utils";
 
-export default async function getVideoDownloadables(postAPIData: RedditPostContentAPIData) {
+export default async function getVideoDownloadablesFromApiData(postAPIData: RedditPostContentAPIData) {
     const downloads: BaseDownloadable[] = [];
 
     const vidData = postAPIData.media?.reddit_video ?? postAPIData?.preview?.reddit_video_preview;
@@ -51,5 +51,4 @@ export default async function getVideoDownloadables(postAPIData: RedditPostConte
     }
 
     return downloads;
-
 }

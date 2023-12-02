@@ -2,7 +2,7 @@ import type { MediaDimensions } from "../../types/MediaDimensions";
 import type { RedditPostContentAPIData } from "../../types/RedditPostContentAPIData";
 import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 
-export default async function getImageDownloadables(postAPIData: RedditPostContentAPIData) {
+export default async function getImageDownloadablesFromApiData(postAPIData: RedditPostContentAPIData) {
     const downloads = []
 
     const url = postAPIData.url;
