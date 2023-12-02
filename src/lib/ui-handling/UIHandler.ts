@@ -1,5 +1,8 @@
 import type { DownloadType } from "../../constants";
 import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
+import type { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
+import type { ImageDownloadable } from "../downloadable/ImageDownloadable";
+import type { VideoDownloadable } from "../downloadable/VideoDownloadable";
 
 export default interface UIHandler {
     detectPosts: () => HTMLElement[];
@@ -11,6 +14,11 @@ export default interface UIHandler {
     upvote: (post: HTMLElement) => void;
     getPostURL: (post: HTMLElement) => string;
     getPostPermalink(post: HTMLElement): string;
-    getDownloads: (post: HTMLElement, downloadType?: DownloadType) => Promise<BaseDownloadable[]>;
     getPrimaryDownloadType: (post: HTMLElement) => DownloadType | null;
+
+    getImageDownloadables(post: HTMLElement): Promise<ImageDownloadable[]>;
+    getVideoDownloadables(post: HTMLElement): Promise<VideoDownloadable[]>;
+    getGalleryDownloadables(post: HTMLElement): Promise<GalleryDownloadable[]>;
+
+    getPrimaryDownloadType(post: HTMLElement): DownloadType | null;
 }

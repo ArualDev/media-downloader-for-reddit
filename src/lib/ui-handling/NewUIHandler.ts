@@ -1,10 +1,11 @@
 import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type UIHandler from "./UIHandler";
-import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, postUrlFromPermalink } from "../utils";
+import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, getOriginalImageFileNameFromUrl, postUrlFromPermalink } from "../utils";
 import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
+import type { VideoDownloadable } from "../downloadable/VideoDownloadable";
 
 export default class NewUIHandler implements UIHandler {
 
@@ -41,59 +42,52 @@ export default class NewUIHandler implements UIHandler {
         return permalink;
     }
 
-    async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
-        const res: BaseDownloadable[] = [];
+    async getImageDownloadables(post: HTMLElement): Promise<ImageDownloadable[]> {
+        const contentHref = post.getAttribute('content-href');
+        if (!contentHref)
+            return [];
 
-        if (downloadType === DownloadType.Video) {
-            const player = post.querySelector('shreddit-player')
-            const packedMediaJSON = player?.getAttribute('packaged-media-json');
-            if (!packedMediaJSON)
-                return res;
-            res.push(...await getDownloadsFromPackagedMediaJSON(packedMediaJSON));
+        return [
+            new ImageDownloadable({
+                url: contentHref,
+                dimensions: await fetchImageDimensionsFromURL(contentHref!)
+            })
+        ];
+    }
+
+    async getVideoDownloadables(post: HTMLElement): Promise<VideoDownloadable[]> {
+        const player = post.querySelector('shreddit-player')
+        const packedMediaJSON = player?.getAttribute('packaged-media-json');
+        if (!packedMediaJSON)
+            return [];
+        return await getDownloadsFromPackagedMediaJSON(packedMediaJSON);
+    }
+
+    async getGalleryDownloadables(post: HTMLElement): Promise<GalleryDownloadable[]> {
+        const imgElements = [...post.querySelectorAll('ul li a figure img')] as HTMLImageElement[];
+
+        const imageDownloads: ImageDownloadable[] = [];
+
+
+        for (const imgElement of imgElements) {
+            let imageUrl = imgElement.src;
+
+            // Extract the original image from the .webp path
+            const imageFileName = getOriginalImageFileNameFromUrl(imageUrl);
+            imageUrl = imageFileName ? `https://i.redd.it/${imageFileName}` : imageUrl;
+
+            imageDownloads.push(new ImageDownloadable({
+                url: imageUrl,
+                dimensions: await fetchImageDimensionsFromURL(imageUrl)
+            }))
         }
 
-        if (downloadType === DownloadType.Image) {
-            const contentHref = post.getAttribute('content-href');
-
-            const srcset = (post.querySelector('img') as HTMLImageElement)?.srcset;
-            const match = srcset.match(/\s(\d+)w$/);
-            // const aspectRatio = Number((post.querySelector('shreddit-aspect-ratio') as HTMLElement)?.style.getPropertyValue('--aspect-ratio'));
-            // const width = match ? parseInt(match[1]) : undefined;
-            // const height = width ? Math.ceil(width * aspectRatio) : undefined; // It is off by one pixel in some cases. Dunno why exactly
-
-            if (contentHref) {
-                res.push(new ImageDownloadable({
-                    url: contentHref,
-                    dimensions: await fetchImageDimensionsFromURL(contentHref!)
-                }));
-            }
-        }
-
-        if (downloadType === DownloadType.Gallery) {
-            const imgElements = post.querySelectorAll('ul li a figure img');
-
-            const imageDownloads: ImageDownloadable[] = [];
-            for (const imgElement of imgElements) {
-                let src = imgElement.getAttribute('src')!;
-
-                // Extract the original image from the .webp path
-                const match = src.match(/-.{2}-(.+)\?/);
-
-                // If the original image cannot be extracted, use the provided src path
-                src = match ? `https://i.redd.it/${match[1]}` : src;
-
-                imageDownloads.push(new ImageDownloadable({
-                    url: src,
-                    dimensions: await fetchImageDimensionsFromURL(src)
-                }))
-            }
-
-            res.push(new GalleryDownloadable({
+        return [
+            new GalleryDownloadable({
                 imageDownloadables: imageDownloads
-            }));
-        }
-        return res;
-    };
+            })
+        ];
+    }
 
     getPrimaryDownloadType(post: HTMLElement) {
         const postTypeAttr = post.getAttribute('post-type');

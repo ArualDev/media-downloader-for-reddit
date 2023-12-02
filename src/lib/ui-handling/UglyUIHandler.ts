@@ -2,10 +2,11 @@ import Browser from "webextension-polyfill";
 import DownloadButton from "../../components/ugly-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type UIHandler from "./UIHandler";
-import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, postUrlFromPermalink } from "../utils";
+import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, getOriginalImageFileNameFromUrl, postUrlFromPermalink } from "../utils";
 import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
+import type { VideoDownloadable } from "../downloadable/VideoDownloadable";
 
 export default class UglyUIHandler implements UIHandler {
     detectPosts() {
@@ -49,90 +50,83 @@ export default class UglyUIHandler implements UIHandler {
         return post.querySelector("a[data-click-id=body]")?.getAttribute("href")!;
     }
 
-    async getDownloads(post: HTMLElement, downloadType?: DownloadType) {
-        const res: BaseDownloadable[] = []
+    async getImageDownloadables(post: HTMLElement): Promise<ImageDownloadable[]> {
+        const img = post.querySelector('img[alt="Post image"]') as HTMLImageElement;
 
-        if (downloadType === DownloadType.Video) {
-            const player = post.querySelector('shreddit-player')
-            if (!player)
-                return res;
+        const originalFileName = getOriginalImageFileNameFromUrl(img.src);
 
-            const packedMediaJSON = player.getAttribute('packaged-media-json');
-            if (!packedMediaJSON)
-                return res;
-
-            res.push(...await getDownloadsFromPackagedMediaJSON(packedMediaJSON));
-        }
-
-        if (downloadType === DownloadType.Image) {
-            const img = post.querySelector('img[alt="Post image"]') as HTMLImageElement;
-
-            const matches = img.src.match(/^https:\/\/(preview)(\.redd\.it\/.*)\?/);
-
-            if (matches && matches.length > 1 && matches[1] === 'preview') {
-
-                const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-                    const img = new Image();
-                    img.addEventListener('load', () => resolve(img));
-                    img.addEventListener('error', (err) => reject(err));
-                    img.src = url;
-                });
-
-                const url = `https://i${matches[2]}`;
-                // const image = await loadImage(url);
-                // const width = image.naturalWidth;
-                // const height = image.naturalHeight;
-
-                res.push(new ImageDownloadable({
+        if (originalFileName) {
+            const url = `https://i.redd.it/${originalFileName}`;
+            return [
+                new ImageDownloadable({
                     url: url,
                     dimensions: await fetchImageDimensionsFromURL(url)
-                }))
-            } else {
-                res.push(new ImageDownloadable({
-                    url: img.src,
-                    dimensions: {
-                        width: img.naturalWidth,
-                        height: img.naturalHeight
-                    }
-                }))
-            }
+                })
+            ];
         }
 
-        if (downloadType === DownloadType.Gallery) {
-            const imgElements = post.querySelectorAll('ul li figure img');
-            console.log(imgElements);
+        return [
+            new ImageDownloadable({
+                url: img.src,
+                dimensions: {
+                    width: img.naturalWidth,
+                    height: img.naturalHeight
+                }
+            })
+        ]
+    }
 
+    async getVideoDownloadables(post: HTMLElement): Promise<VideoDownloadable[]> {
+        const player = post.querySelector('shreddit-player') as HTMLElement | null;
+        if (!player)
+            return [];
 
-            const imageDownloads: ImageDownloadable[] = [];
-            for (const imgElement of imgElements) {
-                let src = imgElement.getAttribute('src')!;
+        const packedMediaJSON = player.getAttribute('packaged-media-json');
+        if (!packedMediaJSON)
+            return [];
 
-                // Extract the original image from the .webp path
-                const match = src.match(/-.{2}-(.+)\?/);
+        return await getDownloadsFromPackagedMediaJSON(packedMediaJSON);
+    }
 
-                // If the original image cannot be extracted, use the provided src path
-                src = match ? `https://i.redd.it/${match[1]}` : src;
+    async getGalleryDownloadables(post: HTMLElement): Promise<GalleryDownloadable[]> {
 
-                imageDownloads.push(new ImageDownloadable({
-                    url: src,
-                    dimensions: await fetchImageDimensionsFromURL(src)
-                }))
-            }
+        const liElements = [...post.querySelectorAll('ul li')] as HTMLImageElement[];
+        const imgElements = [...post.querySelectorAll('ul li figure img')] as HTMLImageElement[];
 
-            res.push(new GalleryDownloadable({
+        // If some images of the gallery are not loaded, discard the gallery. 
+        // In this UI version galleries load only two first images by default, so only these images can be guaranteed.
+        // There seems to be no other way to scrape the rest of the images without some tricky DOM manipulation or making a request
+        // and what's the point in making another request if API returns all the info anyway.
+        // TODO: Figure out a way to make reddit front-end load all images first
+        if (liElements.length > imgElements.length)
+            return []
+
+        const imageDownloads: ImageDownloadable[] = [];
+        for (const imgElement of imgElements) {
+            let src = imgElement.src;
+
+            // Extract the original image from the .webp path
+            const originalFileName = getOriginalImageFileNameFromUrl(src);
+
+            // If the original image cannot be extracted, use the provided src path
+            src = originalFileName ? `https://i.redd.it/${originalFileName}` : src;
+
+            imageDownloads.push(new ImageDownloadable({
+                url: src,
+                dimensions: await fetchImageDimensionsFromURL(src)
+            }))
+        }
+
+        return [
+            new GalleryDownloadable({
                 imageDownloadables: imageDownloads
-            }));
-        }
-
-
-        return res;
+            })
+        ];
     }
 
     getPrimaryDownloadType(post: HTMLElement) {
-        if (post.querySelector('div[data-testid="shreddit-player-wrapper"], media-telemetry-observer')) {
-            console.log(post)
+        if (post.querySelector('div[data-testid="shreddit-player-wrapper"], media-telemetry-observer'))
             return DownloadType.Video;
-        }
         if (post.querySelector('ul._1apobczT0TzIKMWpza0OhL'))
             return DownloadType.Gallery;
         if (post.querySelector('img[alt="Post image"]'))
