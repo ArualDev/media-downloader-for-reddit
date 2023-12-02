@@ -3,6 +3,10 @@ import injectDevReload from './dev/injectDevReload';
 import PostData from './lib/PostData';
 import DownloadScreen from './components/common/DownloadScreen.svelte';
 import { getUIHandler } from './lib/ui-handling/getUIHandler';
+import { fetchPostContentFromApi } from './lib/utils';
+import getImageDownloadablesFromApiData from './lib/api-handling/getImageDownloadablesFromApiData';
+import getVideoDownloadablesFromApiData from './lib/api-handling/getVideoDownloadablesFromApiData';
+import getGalleryDownloadablesFromApiData from './lib/api-handling/getGalleryDownloadablesFromApiData';
 
 let uiHandler = getUIHandler();
 
@@ -36,8 +40,23 @@ async function handlePost(postElement: HTMLElement) {
     async function handleClickMore() {
         if (!loadedDownloads) {
             await postData.getDownloadsFromUI()
+            // await postData.fetchDownloadsFromAPI();
             loadedDownloads = true;
         }
+
+        postData.fetchDownloadsFromAPI()
+            .then(() => {
+                downloadScreen.updateDownloads(postData.downloads);
+                for (const download of postData.downloads) {
+                    if (download.fileSize)
+                        continue;
+                    download.fetchFileSize()
+                        .then(() => {
+                            downloadScreen.updateDownloads(postData.downloads);
+                        });
+                }
+            })
+
         downloadScreen.updateDownloads(postData.downloads)
         downloadScreen.toggle();
 
