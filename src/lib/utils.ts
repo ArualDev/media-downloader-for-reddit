@@ -70,7 +70,7 @@ export async function fetchFileSizeFromURL(url: string): Promise<number | null> 
     });
 }
 
-export async function fetchPostDataFromAPI(postUrl: string): Promise<RedditPostContentAPIData> {
+export async function fetchPostContentFromAPI(postUrl: string): Promise<RedditPostContentAPIData> {
     const responseObject = await Browser.runtime.sendMessage({
         action: 'fetch-json',
         url: postUrl
