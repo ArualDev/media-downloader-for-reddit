@@ -26,7 +26,7 @@ export async function getDownloadsFromPackagedMediaJSON(packedMediaJSON: string)
     const data = (await JSON.parse(packedMediaJSON)) as RedditPackagedMediaData;
     const permutations = data?.playbackMp4s?.permutations;
 
-    const result: BaseDownloadable[] = [];
+    const result: VideoDownloadable[] = [];
 
     for (const permutation of permutations) {
         const source = permutation.source;
