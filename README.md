@@ -14,8 +14,8 @@ A complete rewrite of the extension is currently under developement with new fea
 | --------------------------------------------------------------------------- | ----------------- |
 | Support for Chromium browsers and Manifest V3                               | ✅ Ready          |
 | Support for all Reddit front-ends (incl. old.reddit and the new beta UI)    | ✅ Ready          |
-| Support for scraping media data from front-end                              | ⚒️ In progress    |
-| Rewrite of fetching media data from API                                     | ⚒️ In progress    |
+| Support for scraping media content from front-end                           | ✅ Ready          |
+| Rewrite of fetching media content from API                                  | ⚒️ In progress    |
 | Major optimizations to the user experience (incl. faster loading times)     | ⚒️ In progress    |
 | Improved media detection                                                    | ⚒️ In progress    |
 | Combining video with audio in the browser using ffmpeg.wasm                 | 📅 Planned        |
