@@ -65,7 +65,7 @@ export async function fetchImageDimensionsFromURL(url: string): Promise<MediaDim
 }
 
 export function getOriginalImageFileNameFromUrl(url: string) {
-    const pattern = /[a-z1-9]{8,16}\.[a-z1-9]{2,4}/;
+    const pattern = /[a-z0-9]{8,16}\.[a-z1-9]{2,4}/;
     const match = url.match(pattern);
     return match ? match[0] : null;
 }
