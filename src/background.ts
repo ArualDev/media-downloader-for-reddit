@@ -1,5 +1,7 @@
 import Browser from "webextension-polyfill";
 
+const fileSizeCache: Record<string, number> = {};
+
 Browser.runtime.onMessage.addListener(handleMessage);
 async function handleMessage(message: any, sender: any, sendResponse: any) {
     if (message.action === 'download') {
@@ -21,6 +23,10 @@ async function handleMessage(message: any, sender: any, sendResponse: any) {
     }
 
     if (message.action === 'fetch-file-size') {
+
+        if (message.url in fileSizeCache)
+            return fileSizeCache[message.url];
+
         const response = await fetch(message.url, { method: 'HEAD' })
         if (!response.ok)
             return null;
@@ -28,6 +34,10 @@ async function handleMessage(message: any, sender: any, sendResponse: any) {
         if (!contentLengthStr)
             return null;
         const fileSize = parseInt(contentLengthStr);
+
+        if (!(message.url in fileSizeCache) && fileSize > 0)
+            fileSizeCache[message.url] = fileSize;
+
         return fileSize;
     }
 
