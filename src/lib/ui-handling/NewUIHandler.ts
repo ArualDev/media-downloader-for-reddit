@@ -1,7 +1,7 @@
 import DownloadButton from "../../components/new-ui/DownloadButton.svelte";
 import { DownloadType } from "../../constants";
 import type UIHandler from "./UIHandler";
-import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, getOriginalImageFileNameFromUrl, postUrlFromPermalink } from "../utils";
+import { fetchImageDimensionsFromURL, getDownloadsFromPackagedMediaJSON, getOriginalImageFileNameFromUrl, postUrlFromPermalink, tryExtractRedditMediaUrl } from "../utils";
 import type { BaseDownloadable } from "../downloadable/BaseDownloadable";
 import { ImageDownloadable } from "../downloadable/ImageDownloadable";
 import { GalleryDownloadable } from "../downloadable/GalleryDownloadable";
@@ -70,11 +70,12 @@ export default class NewUIHandler implements UIHandler {
 
 
         for (const imgElement of imgElements) {
-            let imageUrl = imgElement.src;
+            // If the src is empty, it means the image has not been loaded, so read the url from 'data-lazy-src'
+            let imageUrl = imgElement.src === ''
+                ? imgElement.getAttribute('data-lazy-src')!
+                : imgElement.src;
 
-            // Extract the original image from the .webp path
-            const imageFileName = getOriginalImageFileNameFromUrl(imageUrl);
-            imageUrl = imageFileName ? `https://i.redd.it/${imageFileName}` : imageUrl;
+            imageUrl = tryExtractRedditMediaUrl(imageUrl, DownloadType.Image);
 
             imageDownloads.push(new ImageDownloadable({
                 url: imageUrl,
